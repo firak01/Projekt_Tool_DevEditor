@@ -24,9 +24,12 @@ public class RegexReplaceTool {
             System.out.println("  java RegexReplaceTool <pfad-zum-ordner>");
             System.out.println("  java RegexReplaceTool <pfad-zur-datei.java>");
             return;
+        }else {
+        	System.out.println("Starting using file:");        	
         }
 
         Path inputPath = Paths.get(args[0]);
+        System.out.println(inputPath.toString());
         if (Files.isDirectory(inputPath)) {
             // Alle .java-Dateien im Verzeichnisbaum durchlaufen
             Files.walkFileTree(inputPath, new SimpleFileVisitor<Path>() {
@@ -48,11 +51,22 @@ public class RegexReplaceTool {
 
     private static void processFile(Path file) {
         try {
-            String content = new String(Files.readAllBytes(file), UTF8);
-
+        	System.out.println("Reading File:");
+        	System.out.println(file.toString());
+            
+        	String content = new String(Files.readAllBytes(file), UTF8);
+//        	System.out.println("###########");
+//        	System.out.println("## CONTENT ");
+//        	System.out.println("###########");
+//        	System.out.println(content);
+        	
             Matcher m = P.matcher(content);
             String newContent = m.replaceAll(REPLACEMENT);
-
+//            System.out.println("###########");
+//            System.out.println("## NEW CONTENT");
+//            System.out.println("###########");
+//            System.out.println(newContent);
+            
             if (!content.equals(newContent)) {
                 // Backup anlegen (.bak-Datei)
                 Path backupFile = Paths.get(file.toString() + ".bak");
