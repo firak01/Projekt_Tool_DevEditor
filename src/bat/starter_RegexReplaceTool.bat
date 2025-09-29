@@ -11,8 +11,8 @@ REM ===============================================
 setlocal
 
 REM Basisverzeichnis für compilierten Code
-REM ..\ = gehe von bin\bat eine Ebene höher nach bin\
-set CP=%~dp0..\
+REM ..\..\ = gehe von src\bat zwei Ebenen höher nach src\ und dann nach bin\
+set CP=%~dp0..\..\bin\
 echo Classpath=%CP%
 
 REM Klassenname inkl. Package-Pfad
