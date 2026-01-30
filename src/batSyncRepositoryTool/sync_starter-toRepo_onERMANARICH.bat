@@ -1,0 +1,1 @@
+start sync.bat toRepo C:\Workspace\tomcat202412\webapps\qisserver C:\1fgl\repo\Eclipse202312\HIS_QISSERVER_FGL
