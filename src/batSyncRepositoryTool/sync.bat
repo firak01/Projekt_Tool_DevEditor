@@ -41,7 +41,7 @@ if not exist "%TO%" (
 )
 
 REM --- Mappings laden ---
-for /f "usebackq tokens=1,2 delims==" %%A in ("paths.cfg") do (
+for /f "usebackq tokens=1,2 delims==" %%A in ("HIS_QISSERVER_FGL_paths.cfg") do (
     if not "%%A"=="" (
         set %%A=%%B
     )
