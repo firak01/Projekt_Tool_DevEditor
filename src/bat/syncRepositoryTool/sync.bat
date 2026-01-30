@@ -48,10 +48,11 @@ for /f "usebackq tokens=1,2 delims==" %%A in ("HIS_QISSERVER_FGL_paths.cfg") do 
 )
 
 REM --- Synchronisation ---
+REM --- XCOPY bricht ab wenn die Datei noch nicht vorhanden ist, etc. . Darum /C hinzufügen... copy errors, continue
 for /f "tokens=1,2 delims==" %%A in ('set MAP_') do (
     set REL=%%B
     echo Copying !REL!
-    xcopy "!FROM!\!REL!" "!TO!\!REL!" /Y /I /R >nul
+    xcopy "!FROM!\!REL!" "!TO!\!REL!" /Y /I /R /C>nul
 )
 
 echo Done.
