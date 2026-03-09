@@ -1,6 +1,9 @@
-Tool in Dateien eines Projekts per RegEx Ausrücken zu suchen
-und die gefundenen Stellen zu ersetzen.
+Tool um definierte Dateien aus einem Java Projekt in ein Git-Repository zu kopieren.
+Anschliessend kann dieses Git-Repository synchronisiert werden.  
 
-Batch startet Java-Program.
-Darin wird derzeit der RegEx Ausdruck 
-und der zu neue Wert für die Stelle hartcoded verwendet.
+Entsprechend gibt es auch den Rückweg: 
+Erst das Git-Repository synchronisieren und anschliessend
+die definierten Dateien aus dem Git-Repository in ein Java Projekt kopieren.
+
+
+
