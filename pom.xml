@@ -32,5 +32,23 @@
 	   	<!-- <version>4.6.0.201612231935-r</version> --><!-- Exception in thread "main" java.lang.UnsupportedClassVersionError: org/eclipse/jgit/api/errors/GitAPIException : Unsupported major.minor version 52.0 -->
 	   	<version>4.5.7.201904151645-r</version>
 	</dependency>
+	
+	
+	<!-- fuer das Logging von jgit -->
+	<dependency>
+	    <groupId>org.apache.logging.log4j</groupId>
+	    <artifactId>log4j-slf4j-impl</artifactId>
+	    <version>2.1</version>
+	    <scope>compile</scope>
+	</dependency>    
+   
+    <!-- fuer das Logging von jgit: Source: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+	<dependency>
+	    <groupId>org.apache.logging.log4j</groupId>
+	    <artifactId>log4j-core</artifactId>
+	    <version>2.1</version>
+	    <scope>compile</scope>
+	</dependency>
+
   </dependencies>
 </project>
