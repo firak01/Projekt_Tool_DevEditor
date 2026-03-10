@@ -30,6 +30,7 @@ public class jgitStarter {
 		//ERROR StatusLogger Log4j2 could not find a logging implementation. Please add log4j-core to the classpath. Using SimpleLogger to log to the console
 		//Lösung dazu:
 		//https://stackoverflow.com/questions/47881821/error-statuslogger-log4j2-could-not-find-a-logging-implementation
+		TODOGOON20260310;//jetzt wird eine logdatei all.log im Root des Projektordners angelegt. Das ist schlecht/unnoetig für GIT. Dort weg.
 		System.setProperty("log4j.configurationFile","./use/tool/dev/jgit/log/log4j2.xml");
 		
 		//Logger log = LogManager.getLogger(this.getClass().getName());		

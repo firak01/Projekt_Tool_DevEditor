@@ -9,6 +9,7 @@ public class jgitStarterMain {
 
 	public static void main(String[] args) {
 		//siehe: https://www.baeldung.com/jgit
+		//siehe: https://www.vogella.com/tutorials/JGit/article.html
 		try {
 			jgitStarter objStarter = new jgitStarter();
 			objStarter.startit();
