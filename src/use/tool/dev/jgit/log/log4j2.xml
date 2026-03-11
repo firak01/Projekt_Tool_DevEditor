@@ -8,7 +8,7 @@
         </Console>
         
         <File name           ="MyFile"
-              fileName       ="all.log"
+              fileName       ="c:\\temp\\Projekt_Tool_DevEditor\\log4j.log"
               immediateFlush ="false"
               append         ="false">
             <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
