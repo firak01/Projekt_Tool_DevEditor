@@ -31,9 +31,13 @@ public class jgitStarter {
 	
 	public boolean startit() throws IllegalStateException, GitAPIException, URISyntaxException {		                            
 		//Zwei verschiedene lokale Repos, je nachdem welches Eclipse
-		//A) HISinOne Eclipse: File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
-		//B) Dieses Eclipse (Oxygen Version) für Z-Kernel Entwicklung
-		File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+		//A) auf TUBAF - HISinOne Eclipse:
+		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
+		//B) auf TUBAF (Oxygen Version) für Z-Kernel Entwicklung
+		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+		
+		//Auf Ermanarich, der HISinOne Tomcat
+		File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
 		
 		
 		//Trotz Einbinden von  in pom.xml Fehlermeldung;
@@ -136,8 +140,9 @@ public class jgitStarter {
 		The UsernamePasswordCredentialsProvider 's constructor requires a username and password. When using a PAT token, we pass the token as the username and an empty string as the password:
 		 */
 		
-		//PAT in github: Account, ganz unten im Navigator "Developer Settings"
-		String sPAT = "nicht hier, schau woanders nach";
+		//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
+		//String sPAT = "nicht hier, schau woanders nach";
+		String sPAT = "";
 		CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(sPAT, ""); //irgendwie empfohlen
 		//CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("firak01", sPAT); //so funktioniert es auch nicht
 		
@@ -148,8 +153,17 @@ Are you sure you want to continue connecting?
 	at org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider.get(UsernamePasswordCredentialsProvider.java:119)
 		 */
 
-		//Daher mal ein neues git Objekt erstellen
-        File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+	  //Daher mal ein neues git Objekt erstellen   
+      //Zwei verschiedene lokale Repos, je nachdem welches Eclipse
+  		//A) auf TUBAF - HISinOne Eclipse:
+  		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
+  		//B) auf TUBAF (Oxygen Version) für Z-Kernel Entwicklung
+  		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+  		
+  		//Auf Ermanarich, der HISinOne Tomcat
+  		File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
+  		
+        
 		
 		Git git = Git.init().setDirectory(objFileDir).call();
 		System.out.println("Git-Repository init done.");
