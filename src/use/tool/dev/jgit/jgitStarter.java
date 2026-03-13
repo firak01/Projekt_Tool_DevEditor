@@ -29,7 +29,9 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 
 public class jgitStarter {
-
+	//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
+	//String sPAT = "nicht hier, schau woanders nach";
+	public final String sPAT = "";
 	
 	
 	public boolean startit() throws IllegalStateException, GitAPIException, URISyntaxException {		                            
@@ -43,8 +45,10 @@ public class jgitStarter {
 		//File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
 		
 		//Zur Entwicklung (auf DEV04), ein Dummy Verzeichnis
-		File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
-		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy\\JAZDummy");
+		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
+		
+		//Zur Entwicklung (auf ERMANARICH), ein Dummy Verzeichnis
+		File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
 
   		
 		
@@ -82,11 +86,10 @@ public class jgitStarter {
         System.out.println("STATUS AFTER COMMIT");
         this.printStatus(git);
 		
-		
-		
+        //Fuege neue Dateien hinzu, die noch nicht im Repository sind.
+        //TODOGOON20260313
+        
         //Mache den push
-        //TODOGOON20230310;
-        //... wie ??? 
 		String sRepoRemote = "https://github.com/firak01/HIS_QISSERVER_FGL.git"; //Noch ungenutzt, muss aufgeteilt werden und dann der PAT Token eingebaut werden.
         this.pushit(git, credentialsProvider, sRepoRemote);
         
@@ -94,8 +97,7 @@ public class jgitStarter {
         this.printStatus(git);
         //###############################################################
         
-        //Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-       
+ 
         
 		return true;
 	}
@@ -174,8 +176,7 @@ public class jgitStarter {
 				The UsernamePasswordCredentialsProvider 's constructor requires a username and password. When using a PAT token, we pass the token as the username and an empty string as the password:
 				 */
 				
-				//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
-				//String sPAT = "nicht hier, schau woanders nach";
+				
 				CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(sPAT, ""); //irgendwie empfohlen
 				//CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("firak01", sPAT); //so funktioniert es auch nicht
 				
@@ -204,8 +205,6 @@ public class jgitStarter {
 		//Zur Entwicklung, ein Dummy Projekt
 		//https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 		
-		//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
-		//String sPAT = "nicht hier, schau woanders nach";
 		pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
 		
 		//wg Fehler: Caused by: javax.net.ssl.SSLException: Received fatal alert: protocol_version
