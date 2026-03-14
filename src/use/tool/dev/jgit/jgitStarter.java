@@ -1,6 +1,7 @@
 package use.tool.dev.jgit;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -47,10 +48,10 @@ public class jgitStarter {
 		//File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
 		
 		//Zur Entwicklung (auf DEV04), ein Dummy Verzeichnis
-		File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
+		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
 		
 		//Zur Entwicklung (auf ERMANARICH), ein Dummy Verzeichnis
-		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
+		File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
 
   		
 		
@@ -107,15 +108,25 @@ public class jgitStarter {
         //s. ChatGPT vom 20260313
         //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
         //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
+        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
+        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
+        
+        
         //aber manchmal ist nichts zu fetchen, darum Fehler abfangen     
 		try {
-	    	FetchCommand gitCommandFetch = git.fetch();
-	    	gitCommandFetch.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
+			Git git4Fetch = Git.open(objFileDir); 
+			System.out.println("Git-Repository 4 Fetch repository opened.");
+			
+	    	FetchCommand gitCommandFetch = git4Fetch.fetch();
+	    	gitCommandFetch.setRemote("origin"); //Laut chat gpt nicht die URL, da die Remote Daten schon im .git/config stehen
 	    	gitCommandFetch.call();
 	    	System.out.println(("FETCH DONE"));
 	    }catch(TransportException tex) {
 	    	System.out.println(tex.getMessage());
-	    }
+	    } catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         
         //###############################################################
 		return true;
