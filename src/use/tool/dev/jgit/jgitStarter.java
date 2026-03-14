@@ -2,29 +2,30 @@ package use.tool.dev.jgit;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Set;
-
+import java.util.concurrent.SynchronousQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.RemoteAddCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.StatusCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
-import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+
+import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 
 
 
@@ -34,7 +35,8 @@ public class jgitStarter {
 	public final String sPAT = "";
 	
 	
-	public boolean startit() throws IllegalStateException, GitAPIException, URISyntaxException {		                            
+	public boolean startit() throws IllegalStateException, GitAPIException, URISyntaxException, ExceptionZZZ {	
+
 		//Zwei verschiedene lokale Repos, je nachdem welches Eclipse
 		//A) auf TUBAF - HISinOne Eclipse:
 		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
@@ -45,10 +47,10 @@ public class jgitStarter {
 		//File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
 		
 		//Zur Entwicklung (auf DEV04), ein Dummy Verzeichnis
-		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
+		File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
 		
 		//Zur Entwicklung (auf ERMANARICH), ein Dummy Verzeichnis
-		File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
+		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
 
   		
 		
@@ -77,9 +79,14 @@ public class jgitStarter {
 		//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
 		this.addFileTrackedChanged(git);
 								
-        //Mache einen commit       
+        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
+		long lTimestamp = DateTimeZZZ.computeTimestamp();
+		SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
+		String sDateFormated = dateFormater.format(lTimestamp);
+
+		
 		CommitCommand gitCommandCommit = git.commit();
-		gitCommandCommit.setMessage("Commit by Java-Class a Projekt_Tool_DevEditor Solution");
+		gitCommandCommit.setMessage(sDateFormated + " - Commit by Java-Class from a module of Projekt_Tool_DevEditor");
 		gitCommandCommit.call();
         //System.out.println("Committed file " + myFile + " to repository at " + git.getRepository().getDirectory());
         
@@ -92,13 +99,25 @@ public class jgitStarter {
         //Mache den push
 		String sRepoRemote = "https://github.com/firak01/HIS_QISSERVER_FGL.git"; //Noch ungenutzt, muss aufgeteilt werden und dann der PAT Token eingebaut werden.
         this.pushit(git, credentialsProvider, sRepoRemote);
-        
+       
         System.out.println("STATUS AFTER PUSH");
         this.printStatus(git);
+       
+        
+        //s. ChatGPT vom 20260313
+        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
+        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
+        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen     
+		try {
+	    	FetchCommand gitCommandFetch = git.fetch();
+	    	gitCommandFetch.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
+	    	gitCommandFetch.call();
+	    	System.out.println(("FETCH DONE"));
+	    }catch(TransportException tex) {
+	    	System.out.println(tex.getMessage());
+	    }
+        
         //###############################################################
-        
- 
-        
 		return true;
 	}
 	

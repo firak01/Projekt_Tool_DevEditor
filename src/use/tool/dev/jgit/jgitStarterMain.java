@@ -6,6 +6,8 @@ import java.net.URISyntaxException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
+import basic.zBasic.ExceptionZZZ;
+
 public class jgitStarterMain {
 
 	public static void main(String[] args) {
@@ -22,6 +24,9 @@ public class jgitStarterMain {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExceptionZZZ e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
