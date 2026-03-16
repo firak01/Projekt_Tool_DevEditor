@@ -58,6 +58,7 @@ git@github.com:firak01/...
 			//-z  Flags, die aber noch nicht definiert sind.
 			ConfigDEV objConfig = new ConfigDEV(args);
 			String sConnectionType = objConfig.readConnectionType();
+			String sPat = objConfig.readPersonalAccessToken();
 			
 			
 			//Unterschiedliche Wege, TODOGOON20260316;//Mache ein Interface, das dann .startit() als Methode enthaelt
