@@ -32,46 +32,52 @@ import com.jcraft.jsch.Session;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
+import use.tool.dev.jgit.https.JGitSshConfigZZZ;
 
 
 
 public class JgitStarterHTTPS {
 	//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
 	//String sPAT = "nicht hier, schau woanders nach";
-	public final String sPAT = "";
+	public final String sPAT = ""; //Merke: GitHub verweigert das PUSHEN eines PATs durch sein Regelwerk!!!
 	
 	
 	public boolean startit() throws IllegalStateException, GitAPIException, URISyntaxException, ExceptionZZZ {	
 
-		//+++++++++++++++++++++
-		//Verhindere die Prüfung auf Datei C:\Users\<User>\.ssh\known_hosts
-		//Für diese stehen für github die aktuellen Keys hier:
-		//https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints
-		SshSessionFactory.setInstance(new JschConfigSessionFactory() {
-		    @Override
-		    protected void configure(OpenSshConfig.Host host, Session session) {
-		        session.setConfig("StrictHostKeyChecking", "no");
-		    }
-		});
+		//Konfiguriere JGit für SSH
+		//+++ Zugriff sicherstellen
+		JGitSshConfigZZZ.configure();
+		System.out.println(SshSessionFactory.getInstance().getClass());
 		
 		
-	
+		//TODO GOON 20260316: Entsprechende Parameter irgendwoher uebergeben. Es gibt:
+		//a) Verschiedene lokale Repos, je nachdem welches Eclipse/welche Entwicklungsumgebung
+		//b) Der RemoteAlias kann ggfs. anders definiert worden sein. Normalfall scheint "origin" zu sein.
+		//Der zu verwendenden Name steht in der Datei .git\config
+		/* z.B.:
+		[remote "JAZDummy"]
+		url = git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+				fetch = +refs/heads/*:refs/remotes/JAZDummy/*
+		*/
 		
-		//Zwei verschiedene lokale Repos, je nachdem welches Eclipse
+		//BEISPIEL-ENTWICKLUNGSKONFIGURATIONEN
 		//A) auf TUBAF - HISinOne Eclipse:
 		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
 		//B) auf TUBAF (Oxygen Version) für Z-Kernel Entwicklung
-		File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+		//String sRemoteAlias = "origin";
 		
 		//Auf Ermanarich, der HISinOne Tomcat
 		//File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
+		//String sRemoteAlias = "origin";
 		
 		//Zur Entwicklung (auf DEV04), ein Dummy Verzeichnis
-		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
+		File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
+		String sRemoteAlias = "JAZDummy"; //Alias steht in .git
 		
 		//Zur Entwicklung (auf ERMANARICH), ein Dummy Verzeichnis
 		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
-
+		//String sRemoteAlias = "origin";
   		
 		
 		//Trotz Einbinden von  in pom.xml Fehlermeldung;
@@ -92,7 +98,7 @@ public class JgitStarterHTTPS {
 		//+++ Prüfe, ob https oder ssh in der .git\config Datei steht
 		System.out.println("Git-Repository verwendet folgendes Remote: '" +
 			    git.getRepository().getConfig()
-			       .getString("remote","origin","url") +"'"
+			       .getString("remote",sRemoteAlias,"url") +"'"
 			);
 		
 		
@@ -145,7 +151,7 @@ public class JgitStarterHTTPS {
 			System.out.println("Git-Repository 4 Fetch repository opened.");
 			
 	    	FetchCommand gitCommandFetch = git4Fetch.fetch();
-	    	gitCommandFetch.setRemote("origin"); //Laut chat gpt nicht die URL, da die Remote Daten schon im .git/config stehen
+	    	gitCommandFetch.setRemote(sRemoteAlias); //Laut chat gpt nicht die URL, da die Remote Daten schon im .git/config stehen
 	    	gitCommandFetch.call();
 	    	System.out.println(("FETCH DONE"));
 	    }catch(TransportException tex) {
@@ -248,39 +254,44 @@ public class JgitStarterHTTPS {
 		return credentialsProvider;
 	}
 	
+	//TODOGOON20260316: sRepoRemote fuer die URL verwenden.
+	//                  definiert als https-URL, die man aus der Github-Seite bekommen kann
+	//
+	//                  //Variante A) mit sPAT in URL
+	//                  https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git
+	//
+	//                  //Variante B) ohne sPAT in URL
+	//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+
 	public void pushit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws URISyntaxException, InvalidRemoteException, TransportException, GitAPIException {
 				
 		// aber mal explizit als pushCommand
 		PushCommand pushCommand = git.push();
-		//pushCommand.setRemote("https://github.com/firak01/HIS_QISSERVER_FGL.git");
-		//aber Fehler.
 				
 		//An einigen Stellen wird die Syntax der URL mit Username:Token genannt.
 		//git clone https://scuzzlebuzzle:<MYTOKEN>@github.com/scuzzlebuzzle/ol3-1.git --branch=gh-pages gh-pages
 		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
 		
-		//Zur Entwicklung, ein Dummy Projekt
-		//https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
-		
-		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
-		
-		//lokal: File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
-		//remote: https://github.com/firak01/HIS_QISSERVER_FGL.git
-		pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
-		
 		//anderes Verzeichnis:
 		//lokal:
 		//remote: 
-		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
+		pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
+		
+		//lokal: File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+		//remote: https://github.com/firak01/HIS_QISSERVER_FGL.git
+		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
+		
 		
 		//wg Fehler: Caused by: javax.net.ssl.SSLException: Received fatal alert: protocol_version
 		//GitHub verlangt TLS 1.2
 		//System.setProperty("https.protocols", "TLSv1");
-		System.setProperty("https.protocols", "TLSv1.2"); //aber Fehler: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
-		//Merke: keytool ist wohl ein Program unter dem Java JDK
-		//keytool -import -noprompt -trustcacerts -alias http://www.example.com -file "C:\Path\to\www.example.com.crt" -keystore cacerts
+		System.setProperty("https.protocols", "TLSv1.2"); 
+		//aber, wenn Fehler: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+		//Loesungsansatz:    keytool ist wohl ein Program unter dem Java JDK
+		//                   keytool -import -noprompt -trustcacerts -alias http://www.example.com -file "C:\Path\to\www.example.com.crt" -keystore cacerts
+		//Damit erstellt man einen zusaetzlichen Eintrag im Certifier-Store, der Datei cacerts ( z.B. hier: C:\java\jdk1.8.0\jre\lib\security\cacerts )
   
-		// push to remote:
+		//push to remote:
 		pushCommand.setCredentialsProvider(credentialsProvider);
 		pushCommand.call();
 		

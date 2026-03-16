@@ -10,6 +10,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 
 import basic.zBasic.ExceptionZZZ;
+import use.tool.dev.ConfigDEV;
+import use.tool.dev.jgit.https.JgitStarterHTTPS;
 import use.tool.dev.jgit.ssh.JgitStarterSSH;
 
 public class JgitStarterMain {
@@ -29,7 +31,7 @@ public class JgitStarterMain {
 		//### -Djavax.net.ssl.trustStore=C:\java\jdk1.8.0_202\jre\lib\security\cacerts  -Djavax.net.ssl.trustStorePassword=changeit
 
 		
-		try {
+		try {												
 			/* Problem: Je nach Rechner / Eclipse
 			 *          gibt es unterschiedlichen Repository Konfigurationen, die dann für die Authentifizierung wichti sind.
 			 * 
@@ -50,12 +52,20 @@ git@github.com:firak01/...
 → JGit versucht SSH, obwohl du HTTPS + Token im Code übergeben willst.
 			 */
 			
-			//Unterschiedliche Wege
+			//### Versuch Argumente entgegenzunehmen
+			TODOGOON20260316;//mal sehn, ob das klappt.... auch ohne Kernel-ini Datei...
+			//-ct https oder ssh
+			//-z  Flags, die aber noch nicht definiert sind.
+			ConfigDEV objConfig = new ConfigDEV(args);
+			String sConnectionType = objConfig.readConnectionType();
+			
+			
+			//Unterschiedliche Wege, TODOGOON20260316;//Mache ein Interface, das dann .startit() als Methode enthaelt
 			//A) DEV04
-			//JgitStarterHTTPS objStarter = new JgitStarterHTTPS();
+			JgitStarterHTTPS objStarter = new JgitStarterHTTPS();
 			
 			//B) TUBAF
-			JgitStarterSSH objStarter = new JgitStarterSSH();
+			//JgitStarterSSH objStarter = new JgitStarterSSH();
 			objStarter.startit();
 		} catch (IllegalStateException e) {
 			// TODO Auto-generated catch block

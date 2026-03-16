@@ -1,4 +1,4 @@
-package use.tool.dev.jgit.ssh;
+package use.tool.dev.jgit.https;
 
 import org.eclipse.jgit.transport.SshSessionFactory;
 
