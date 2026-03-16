@@ -23,14 +23,19 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+
+import com.jcraft.jsch.Session;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 
 
 
-public class jgitStarter {
+public class JgitStarterHTTPS {
 	//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
 	//String sPAT = "nicht hier, schau woanders nach";
 	public final String sPAT = "";
@@ -38,11 +43,25 @@ public class jgitStarter {
 	
 	public boolean startit() throws IllegalStateException, GitAPIException, URISyntaxException, ExceptionZZZ {	
 
+		//+++++++++++++++++++++
+		//Verhindere die Prüfung auf Datei C:\Users\<User>\.ssh\known_hosts
+		//Für diese stehen für github die aktuellen Keys hier:
+		//https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints
+		SshSessionFactory.setInstance(new JschConfigSessionFactory() {
+		    @Override
+		    protected void configure(OpenSshConfig.Host host, Session session) {
+		        session.setConfig("StrictHostKeyChecking", "no");
+		    }
+		});
+		
+		
+	
+		
 		//Zwei verschiedene lokale Repos, je nachdem welches Eclipse
 		//A) auf TUBAF - HISinOne Eclipse:
 		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
 		//B) auf TUBAF (Oxygen Version) für Z-Kernel Entwicklung
-		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+		File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
 		
 		//Auf Ermanarich, der HISinOne Tomcat
 		//File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
@@ -51,7 +70,7 @@ public class jgitStarter {
 		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
 		
 		//Zur Entwicklung (auf ERMANARICH), ein Dummy Verzeichnis
-		File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
+		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
 
   		
 		
@@ -69,7 +88,15 @@ public class jgitStarter {
 		gitCommandInit.setDirectory(objFileDir);
 		Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 		System.out.println("Git-Repository init done.");
-						
+				
+		//+++ Prüfe, ob https oder ssh in der .git\config Datei steht
+		System.out.println("Git-Repository verwendet folgendes Remote: '" +
+			    git.getRepository().getConfig()
+			       .getString("remote","origin","url") +"'"
+			);
+		
+		
+		//+++ Zugriff sicherstellen
 		CredentialsProvider credentialsProvider = this.createCredentialsProviderByToken(git);
 		System.out.println("Git Credentials Provider created done.");
 		
@@ -235,7 +262,16 @@ public class jgitStarter {
 		//Zur Entwicklung, ein Dummy Projekt
 		//https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 		
-		pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
+		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
+		
+		//lokal: File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+		//remote: https://github.com/firak01/HIS_QISSERVER_FGL.git
+		pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
+		
+		//anderes Verzeichnis:
+		//lokal:
+		//remote: 
+		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
 		
 		//wg Fehler: Caused by: javax.net.ssl.SSLException: Received fatal alert: protocol_version
 		//GitHub verlangt TLS 1.2
