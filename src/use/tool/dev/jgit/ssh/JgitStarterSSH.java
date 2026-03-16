@@ -1,4 +1,4 @@
-package use.tool.dev.jgit;
+package use.tool.dev.jgit.ssh;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,28 +35,16 @@ import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 
 
 
-public class JgitStarterHTTPS {
-	//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
-	//String sPAT = "nicht hier, schau woanders nach";
-	public final String sPAT = "";
+public class JgitStarterSSH {
 	
 	
 	public boolean startit() throws IllegalStateException, GitAPIException, URISyntaxException, ExceptionZZZ {	
-
-		//+++++++++++++++++++++
-		//Verhindere die Prüfung auf Datei C:\Users\<User>\.ssh\known_hosts
-		//Für diese stehen für github die aktuellen Keys hier:
-		//https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints
-		SshSessionFactory.setInstance(new JschConfigSessionFactory() {
-		    @Override
-		    protected void configure(OpenSshConfig.Host host, Session session) {
-		        session.setConfig("StrictHostKeyChecking", "no");
-		    }
-		});
 		
-		
-	
-		
+		//Konfiguriere JGit für SSH
+		//+++ Zugriff sicherstellen
+		JGitSshConfigZZZ.configure();
+		System.out.println(SshSessionFactory.getInstance().getClass());
+			
 		//Zwei verschiedene lokale Repos, je nachdem welches Eclipse
 		//A) auf TUBAF - HISinOne Eclipse:
 		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
@@ -86,20 +74,16 @@ public class JgitStarterHTTPS {
 		
 		InitCommand gitCommandInit = Git.init();
 		gitCommandInit.setDirectory(objFileDir);
+		
 		Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 		System.out.println("Git-Repository init done.");
-				
+		
 		//+++ Prüfe, ob https oder ssh in der .git\config Datei steht
 		System.out.println("Git-Repository verwendet folgendes Remote: '" +
 			    git.getRepository().getConfig()
 			       .getString("remote","origin","url") +"'"
 			);
-		
-		
-		//+++ Zugriff sicherstellen
-		CredentialsProvider credentialsProvider = this.createCredentialsProviderByToken(git);
-		System.out.println("Git Credentials Provider created done.");
-		
+				
 		System.out.println("STATUS BEFORE COMMIT");		
 		this.printStatus(git);
         //##################################################################
@@ -124,9 +108,8 @@ public class JgitStarterHTTPS {
         //Fuege neue Dateien hinzu, die noch nicht im Repository sind.
         //TODOGOON20260313
         
-        //Mache den push
-		String sRepoRemote = "https://github.com/firak01/HIS_QISSERVER_FGL.git"; //Noch ungenutzt, muss aufgeteilt werden und dann der PAT Token eingebaut werden.
-        this.pushit(git, credentialsProvider, sRepoRemote);
+        //Mache den push	
+        this.pushit(git);
        
         System.out.println("STATUS AFTER PUSH");
         this.printStatus(git);
@@ -205,83 +188,20 @@ public class JgitStarterHTTPS {
 	
 	}
 	
-	public CredentialsProvider createCredentialsProviderByToken(Git git) {
-		//aus Eclipse-Push Konfiguration:
-				//entspricht dem Github - Projekt - SSH
-				//git@github.com:firak01/HIS_QISSERVER_FGL.git
-				
-				//aus Github - Projekt - HTTPS
-				//https://github.com/firak01/HIS_QISSERVER_FGL.git
-				
-				//##################
-				//Authentifizierung mit https
-				/*https://medium.com/autotrader-engineering/working-with-git-in-java-part-1-a-jgit-tutorial-bc03b404a517
-				Authenticating with a remote
-				Most remote repos will require authentication (at least for the push command). In this tutorial, we’ll be working with remote repositories hosted on GitHub, which has two common authentication methods:
-		    	Using a personal access token (PAT) for authentication over HTTPS
-		    	Using SSH keys for authentication over SSH
-				To keep things simple in this tutorial, we’ll only be covering HTTPS authentication; SSH is more complex and will be covered in part 2 of this two-part blog post.
-
-				So in the following examples, we’ll be using a personal access token (PAT) for authentication via HTTPS. For more information on creating a PAT token, see the GitHub docs.
-				Providing Credentials for Authentication
-
-				The JGit command objects for operations such as git push, git pull, and git clone all share a setCredentialsProvider method that allows us to provide credentials to authenticate with the remote repository.
-
-				The setCredentialsProvider method takes a CredentialsProvider instance as its parameter. This interface has many implementations, the one we need to use for a PAT token is the UsernamePasswordCredentialsProvider (more commonly used for basic authentication).
-				Constructing a CredentialsProvider for a PAT token
-
-				The UsernamePasswordCredentialsProvider 's constructor requires a username and password. When using a PAT token, we pass the token as the username and an empty string as the password:
-				 */
-				
-				
-				CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(sPAT, ""); //irgendwie empfohlen
-				//CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("firak01", sPAT); //so funktioniert es auch nicht
-				
-				/*Fehler:
-				 Exception in thread "main" org.eclipse.jgit.errors.UnsupportedCredentialItem: ssh://git@github.com:22: org.eclipse.jgit.transport.CredentialItem$YesNoType:The authenticity of host 'github.com' can't be established.
-		RSA key fingerprint is.... .
-		Are you sure you want to continue connecting?
-			at org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider.get(UsernamePasswordCredentialsProvider.java:119)
-				 */
-
-			 
-		return credentialsProvider;
-	}
 	
-	public void pushit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws URISyntaxException, InvalidRemoteException, TransportException, GitAPIException {
+	
+	public void pushit(Git git) throws URISyntaxException, InvalidRemoteException, TransportException, GitAPIException {
 				
+		//wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
+		System.out.println(SshSessionFactory.getInstance().getClass());
+		
 		// aber mal explizit als pushCommand
-		PushCommand pushCommand = git.push();
-		//pushCommand.setRemote("https://github.com/firak01/HIS_QISSERVER_FGL.git");
-		//aber Fehler.
-				
-		//An einigen Stellen wird die Syntax der URL mit Username:Token genannt.
-		//git clone https://scuzzlebuzzle:<MYTOKEN>@github.com/scuzzlebuzzle/ol3-1.git --branch=gh-pages gh-pages
-		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
+		PushCommand pushCommand = git.push();		
+		pushCommand.setRemote("origin");
+
+		System.setProperty("https.protocols", "TLSv1.2"); 
 		
-		//Zur Entwicklung, ein Dummy Projekt
-		//https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
-		
-		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
-		
-		//lokal: File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
-		//remote: https://github.com/firak01/HIS_QISSERVER_FGL.git
-		pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
-		
-		//anderes Verzeichnis:
-		//lokal:
-		//remote: 
-		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
-		
-		//wg Fehler: Caused by: javax.net.ssl.SSLException: Received fatal alert: protocol_version
-		//GitHub verlangt TLS 1.2
-		//System.setProperty("https.protocols", "TLSv1");
-		System.setProperty("https.protocols", "TLSv1.2"); //aber Fehler: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
-		//Merke: keytool ist wohl ein Program unter dem Java JDK
-		//keytool -import -noprompt -trustcacerts -alias http://www.example.com -file "C:\Path\to\www.example.com.crt" -keystore cacerts
-  
-		// push to remote:
-		pushCommand.setCredentialsProvider(credentialsProvider);
+		// push to remote:	
 		pushCommand.call();
 		
 	}

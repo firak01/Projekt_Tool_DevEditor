@@ -1,4 +1,4 @@
-package use.tool.dev.jgit;
+package use.tool.dev.jgit.https;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +35,7 @@ import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 
 
 
-public class JgitStarterSSH {
+public class JgitStarterHTTPS {
 	//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
 	//String sPAT = "nicht hier, schau woanders nach";
 	public final String sPAT = "";
