@@ -53,21 +53,27 @@ git@github.com:firak01/...
 			 */
 			
 			//### Versuch Argumente entgegenzunehmen
-			TODOGOON20260316;//mal sehn, ob das klappt.... auch ohne Kernel-ini Datei...
-			//-ct https oder ssh
+			//TODOGOON20260316;//mal sehn, ob das klappt.... auch ohne Kernel-ini Datei...
+			//-https oder -ssh
 			//-z  Flags, die aber noch nicht definiert sind.
 			ConfigDEV objConfig = new ConfigDEV(args);
 			String sConnectionType = objConfig.readConnectionType();
-			String sPat = objConfig.readPersonalAccessToken();
 			
+			//Unterschiedliche Wege, TODOGOON20260316;//Mache ein Interface, das dann .startit() als Methode enthaelt			
+			switch(sConnectionType) {
+			case"ssh":
+				//B) TUBAF
+				JgitStarterSSH objStarterSSH = new JgitStarterSSH();
+				objStarterSSH.startit();
+				break;
+			case "https":
+				//A) DEV04
+				String sPat = objConfig.readPersonalAccessToken();
+				
+				JgitStarterHTTPS objStarterHTTPS = new JgitStarterHTTPS();
+				objStarterHTTPS.startit();
+			}
 			
-			//Unterschiedliche Wege, TODOGOON20260316;//Mache ein Interface, das dann .startit() als Methode enthaelt
-			//A) DEV04
-			JgitStarterHTTPS objStarter = new JgitStarterHTTPS();
-			
-			//B) TUBAF
-			//JgitStarterSSH objStarter = new JgitStarterSSH();
-			objStarter.startit();
 		} catch (IllegalStateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -43,6 +43,16 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 	}
 	
 	@Override
+	public String[] getArgumentArrayDefault() {
+		String[] saArg = new String[3];
+		saArg[0] = "-ssh";									
+		saArg[1] = "-z";
+		saArg[2] = this.getConfigFlagzJsonDefault();
+		
+		return saArg;
+	}
+	
+	@Override
 	public String getApplicationKeyDefault() {
 		return ConfigDEV.sKEY_APPLICATION_DEFAULT;
 	}
@@ -81,13 +91,43 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = objOpt.readValue("ct");
-			if(sReturn==null){
-				sReturn = this.getConnectionTypeDefault();
-			}
+			sReturn = this.readConnectionTypeSSH();
+			if(sReturn!=null) break main;
+			
+			sReturn = this.readConnectionTypeHTTPS();
+			if(sReturn!=null) break main;
+			
+			sReturn = this.getConnectionTypeDefault();			
 		}//end main:		
 		return sReturn;
 	}
+	
+	@Override
+	public String readConnectionTypeSSH() throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("ssh");			
+		}//end main:		
+		return sReturn;
+	}
+	
+	@Override
+	public String readConnectionTypeHTTPS() throws ExceptionZZZ{
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("https");			
+		}//end main:		
+		return sReturn;
+	}
+	
 	
 	@Override
 	public String getPersonalAccessTokenDefault() {
@@ -103,7 +143,7 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 			
 			sReturn = objOpt.readValue("pat");
 			if(sReturn==null){
-				sReturn = this.getConnectionTypeDefault();
+				sReturn = this.getPersonalAccessTokenDefault();
 			}
 		}//end main:		
 		return sReturn;

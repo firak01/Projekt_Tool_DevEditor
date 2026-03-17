@@ -64,16 +64,16 @@ public class JgitStarterHTTPS {
 		//A) auf TUBAF - HISinOne Eclipse:
 		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
 		//B) auf TUBAF (Oxygen Version) für Z-Kernel Entwicklung
-		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
-		//String sRemoteAlias = "origin";
+		File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+		String sRemoteAlias = "origin";
 		
 		//Auf Ermanarich, der HISinOne Tomcat
 		//File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
 		//String sRemoteAlias = "origin";
 		
 		//Zur Entwicklung (auf DEV04), ein Dummy Verzeichnis
-		File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
-		String sRemoteAlias = "JAZDummy"; //Alias steht in .git
+		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
+		//String sRemoteAlias = "JAZDummy"; //Alias steht in .git
 		
 		//Zur Entwicklung (auf ERMANARICH), ein Dummy Verzeichnis
 		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
@@ -93,7 +93,7 @@ public class JgitStarterHTTPS {
 		InitCommand gitCommandInit = Git.init();
 		gitCommandInit.setDirectory(objFileDir);
 		Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-		System.out.println("Git-Repository init done.");
+		System.out.println("Local Git-Repository init done: " + objFileDir.getAbsolutePath());
 				
 		//+++ Prüfe, ob https oder ssh in der .git\config Datei steht
 		System.out.println("Git-Repository verwendet folgendes Remote: '" +
