@@ -6,7 +6,6 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.concurrent.SynchronousQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,31 +22,45 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.JschConfigSessionFactory;
-import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
-import com.jcraft.jsch.Session;
-
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
-import use.tool.dev.jgit.https.JGitSshConfigZZZ;
+import basic.zBasic.util.datatype.string.StringZZZ;
+import use.tool.dev.jgit.AbstractJgitStarter;
+import use.tool.dev.jgit.JgitStarterMain;
 
 
 
-public class JgitStarterHTTPS {
+public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarterHTTPS{
 	//Zugang per ACCESS TOKEN ( PAT ) in github: Account, ganz unten im Navigator "Developer Settings"
 	//String sPAT = "nicht hier, schau woanders nach";
-	public final String sPAT = ""; //Merke: GitHub verweigert das PUSHEN eines PATs durch sein Regelwerk!!!
+	public String sPAT = ""; //Merke: GitHub verweigert das PUSHEN eines PAT-Werts durch sein Regelwerk, hier kann also keine statische Variable final definiert sein!!!
 	
-	
-	public boolean startit() throws IllegalStateException, GitAPIException, URISyntaxException, ExceptionZZZ {	
+	//### aus IJgitStarterHTTPS
+	@Override
+	public void setPersonalAccessToken(String sPat) throws ExceptionZZZ {
+		this.sPAT = sPat;
+	}
 
+	@Override
+	public String getPersonalAccessToken() throws ExceptionZZZ {
+		return this.sPAT;
+	}
+	
+	//### aus IGitStarter
+	
+	
+	@Override
+	public boolean startit() throws ExceptionZZZ {	
+		
+		try {
 		//Konfiguriere JGit für SSH
 		//+++ Zugriff sicherstellen
-		JGitSshConfigZZZ.configure();
-		System.out.println(SshSessionFactory.getInstance().getClass());
+//		JGitSshConfigZZZ.configure();
+//		System.out.println(SshSessionFactory.getInstance().getClass());
 		
 		
 		//TODO GOON 20260316: Entsprechende Parameter irgendwoher uebergeben. Es gibt:
@@ -64,8 +77,22 @@ public class JgitStarterHTTPS {
 		//A) auf TUBAF - HISinOne Eclipse:
 		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
 		//B) auf TUBAF (Oxygen Version) für Z-Kernel Entwicklung
-		File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
-		String sRemoteAlias = "origin";
+			
+		
+		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+		//String sRemoteAlias = "origin";
+		
+		String sDirectoryRepositoryLocal = this.getRepositoryLocal();
+		if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
+			ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+			throw ez;
+		}
+		
+		File objFileDir = new File(sDirectoryRepositoryLocal);
+		if(!objFileDir.exists()) {
+			ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+			throw ez;				
+		}
 		
 		//Auf Ermanarich, der HISinOne Tomcat
 		//File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
@@ -95,11 +122,17 @@ public class JgitStarterHTTPS {
 		Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
 		System.out.println("Local Git-Repository init done: " + objFileDir.getAbsolutePath());
 				
-		//+++ Prüfe, ob https oder ssh in der .git\config Datei steht
-		System.out.println("Git-Repository verwendet folgendes Remote: '" +
-			    git.getRepository().getConfig()
-			       .getString("remote",sRemoteAlias,"url") +"'"
-			);
+		//+++ Prüfe, ob https oder ssh in der .git\config Datei steht	
+		String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
+		if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+			ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+			throw ez;
+		}
+		
+		String sRepositoryRemoteByAlias = git.getRepository().getConfig()
+			       .getString("remote",sRepositoryRemoteAlias,"url");
+		System.out.println("Git-Repository verwendet folgendes Remote (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteByAlias +"'");
+		this.setRepositoryRemote(sRepositoryRemoteByAlias);
 		
 		
 		//+++ Zugriff sicherstellen
@@ -131,8 +164,10 @@ public class JgitStarterHTTPS {
         //TODOGOON20260313
         
         //Mache den push
-		String sRepoRemote = "https://github.com/firak01/HIS_QISSERVER_FGL.git"; //Noch ungenutzt, muss aufgeteilt werden und dann der PAT Token eingebaut werden.
-        this.pushit(git, credentialsProvider, sRepoRemote);
+		//String sRepoRemote = "https://github.com/firak01/HIS_QISSERVER_FGL.git"; //Noch ungenutzt, muss aufgeteilt werden und dann der PAT Token eingebaut werden.
+		
+		
+        this.pushit(git, credentialsProvider, sRepositoryRemoteByAlias);
        
         System.out.println("STATUS AFTER PUSH");
         this.printStatus(git);
@@ -146,22 +181,29 @@ public class JgitStarterHTTPS {
         
         
         //aber manchmal ist nichts zu fetchen, darum Fehler abfangen     
-		try {
-			Git git4Fetch = Git.open(objFileDir); 
-			System.out.println("Git-Repository 4 Fetch repository opened.");
+		Git git4Fetch = Git.open(objFileDir); 
+		System.out.println("Git-Repository 4 Fetch repository opened.");
 			
-	    	FetchCommand gitCommandFetch = git4Fetch.fetch();
-	    	gitCommandFetch.setRemote(sRemoteAlias); //Laut chat gpt nicht die URL, da die Remote Daten schon im .git/config stehen
-	    	gitCommandFetch.call();
-	    	System.out.println(("FETCH DONE"));
-	    }catch(TransportException tex) {
-	    	System.out.println(tex.getMessage());
-	    } catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	    FetchCommand gitCommandFetch = git4Fetch.fetch();
+	    gitCommandFetch.setRemote(sRepositoryRemoteAlias); //Laut chat gpt nicht die URL, da die Remote Daten schon im .git/config stehen
+	    gitCommandFetch.call();
+	    System.out.println(("FETCH DONE"));
+	  
         
         //###############################################################
+		}catch(TransportException tex) {
+			ExceptionZZZ ez = new ExceptionZZZ(tex);
+			throw ez;
+		} catch (IOException ioe) {
+			ExceptionZZZ ez = new ExceptionZZZ(ioe);
+			throw ez;
+		}catch(IllegalStateException ie) {
+			ExceptionZZZ ez = new ExceptionZZZ(ie);
+			throw ez;
+		}catch(GitAPIException gae) {
+			ExceptionZZZ ez = new ExceptionZZZ(gae);
+			throw ez;	
+		}
 		return true;
 	}
 	
@@ -263,8 +305,8 @@ public class JgitStarterHTTPS {
 	//                  //Variante B) ohne sPAT in URL
 	//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
 
-	public void pushit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws URISyntaxException, InvalidRemoteException, TransportException, GitAPIException {
-				
+	public void pushit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ {
+		try {		
 		// aber mal explizit als pushCommand
 		PushCommand pushCommand = git.push();
 				
@@ -275,7 +317,17 @@ public class JgitStarterHTTPS {
 		//anderes Verzeichnis:
 		//lokal:
 		//remote: 
-		pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
+		//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
+		
+		//SSH VERSION:     git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
+		//https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+		String sUrlPartDomainFromSshRepo = StringZZZ.right("@" + sRepoRemote, "@");
+		sUrlPartDomainFromSshRepo = StringZZZ.left(sUrlPartDomainFromSshRepo + ":", ":");
+		
+		String sUrlPartRepoFromSshRepo = StringZZZ.right(":" + sRepoRemote, ":");
+		
+		pushCommand.setRemote("https://firak01:" + sPAT + "@" + sUrlPartDomainFromSshRepo + "/" + sUrlPartRepoFromSshRepo);
+		
 		
 		//lokal: File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
 		//remote: https://github.com/firak01/HIS_QISSERVER_FGL.git
@@ -295,6 +347,17 @@ public class JgitStarterHTTPS {
 		pushCommand.setCredentialsProvider(credentialsProvider);
 		pushCommand.call();
 		
+		//###############################################################		
+		}catch(InvalidRemoteException ire) {
+			ExceptionZZZ ez = new ExceptionZZZ(ire);
+			throw ez;
+		}catch(TransportException te) {
+			ExceptionZZZ ez = new ExceptionZZZ(te);
+			throw ez;
+		}catch(GitAPIException gae) {
+			ExceptionZZZ ez = new ExceptionZZZ(gae);
+			throw ez;
+		}
 	}
 	
 	//##################################################
@@ -316,4 +379,8 @@ public class JgitStarterHTTPS {
             System.out.println("Untracked: " + untrack);
         }
 	}
+
+
+
+	
 }

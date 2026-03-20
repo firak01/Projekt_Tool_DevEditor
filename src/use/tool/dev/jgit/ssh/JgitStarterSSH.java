@@ -24,114 +24,148 @@ import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.transport.SshSessionFactory;
 
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
+import basic.zBasic.util.datatype.string.StringZZZ;
+import use.tool.dev.jgit.AbstractJgitStarter;
+import use.tool.dev.jgit.JgitStarterMain;
 
 
 
-public class JgitStarterSSH {
+public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterSSH{
 	
-	
-	public boolean startit() throws IllegalStateException, GitAPIException, URISyntaxException, ExceptionZZZ {	
-		
-		//Konfiguriere JGit für SSH
-		//+++ Zugriff sicherstellen
-		JGitSshConfigZZZ.configure();
-		System.out.println(SshSessionFactory.getInstance().getClass());
-			
-		//Zwei verschiedene lokale Repos, je nachdem welches Eclipse
-		//A) auf TUBAF - HISinOne Eclipse:
-		//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
-		//B) auf TUBAF (Oxygen Version) für Z-Kernel Entwicklung
-		File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
-		
-		//Auf Ermanarich, der HISinOne Tomcat
-		//File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
-		
-		//Zur Entwicklung (auf DEV04), ein Dummy Verzeichnis
-		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
-		
-		//Zur Entwicklung (auf ERMANARICH), ein Dummy Verzeichnis
-		//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
-
-  		
-		
-		//Trotz Einbinden von  in pom.xml Fehlermeldung;
-		//ERROR StatusLogger Log4j2 could not find a logging implementation. Please add log4j-core to the classpath. Using SimpleLogger to log to the console
-		//Lösung dazu:
-		//https://stackoverflow.com/questions/47881821/error-statuslogger-log4j2-could-not-find-a-logging-implementation
-		//TODOGOON20260310;//jetzt wird eine logdatei all.log im Root des Projektordners angelegt. Das ist schlecht/unnoetig für GIT. Dort weg.
-		System.setProperty("log4j.configurationFile","./use/tool/dev/jgit/log/log4j2.xml");
-		
-		//Logger log = LogManager.getLogger(this.getClass().getName());		
-		Logger log = LogManager.getLogger();
-		
-		InitCommand gitCommandInit = Git.init();
-		gitCommandInit.setDirectory(objFileDir);
-		
-		Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-		System.out.println("Git-Repository init done.");
-		
-		//+++ Prüfe, ob https oder ssh in der .git\config Datei steht
-		System.out.println("Git-Repository verwendet folgendes Remote: '" +
-			    git.getRepository().getConfig()
-			       .getString("remote","origin","url") +"'"
-			);
-				
-		System.out.println("STATUS BEFORE COMMIT");		
-		this.printStatus(git);
-        //##################################################################
-        
-		//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
-		this.addFileTrackedChanged(git);
-								
-        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
-		long lTimestamp = DateTimeZZZ.computeTimestamp();
-		SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
-		String sDateFormated = dateFormater.format(lTimestamp);
-
-		
-		CommitCommand gitCommandCommit = git.commit();
-		gitCommandCommit.setMessage(sDateFormated + " - Commit by Java-Class from a module of Projekt_Tool_DevEditor");
-		gitCommandCommit.call();
-        //System.out.println("Committed file " + myFile + " to repository at " + git.getRepository().getDirectory());
-        
-        System.out.println("STATUS AFTER COMMIT");
-        this.printStatus(git);
-		
-        //Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-        //TODOGOON20260313
-        
-        //Mache den push	
-        this.pushit(git);
-       
-        System.out.println("STATUS AFTER PUSH");
-        this.printStatus(git);
-       
-        
-        //s. ChatGPT vom 20260313
-        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
-        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
-        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
-        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
-        
-        
-        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen     
+	@Override
+	public boolean startit() throws ExceptionZZZ {	
 		try {
+			
+			//Konfiguriere JGit für SSH
+			//+++ Zugriff sicherstellen
+			JGitSshConfigZZZ.configure();
+			System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
+				
+			//Zwei verschiedene lokale Repos, je nachdem welches Eclipse
+			//A) auf TUBAF - HISinOne Eclipse:
+			//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
+			//B) auf TUBAF (Oxygen Version) für Z-Kernel Entwicklung
+			//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
+			String sDirectoryRepositoryLocal = this.getRepositoryLocal();
+			if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
+				ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			File objFileDir = new File(sDirectoryRepositoryLocal);
+			if(!objFileDir.exists()) {
+				ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;				
+			}
+			//Auf Ermanarich, der HISinOne Tomcat
+			//File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
+			
+			//Zur Entwicklung (auf DEV04), ein Dummy Verzeichnis
+			//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
+			
+			//Zur Entwicklung (auf ERMANARICH), ein Dummy Verzeichnis
+			//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
+	
+			String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
+			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+	  		
+			//Trotz Einbinden von  in pom.xml Fehlermeldung;
+			//ERROR StatusLogger Log4j2 could not find a logging implementation. Please add log4j-core to the classpath. Using SimpleLogger to log to the console
+			//Lösung dazu:
+			//https://stackoverflow.com/questions/47881821/error-statuslogger-log4j2-could-not-find-a-logging-implementation
+			//TODOGOON20260310;//jetzt wird eine logdatei all.log im Root des Projektordners angelegt. Das ist schlecht/unnoetig für GIT. Dort weg.
+			System.setProperty("log4j.configurationFile","./use/tool/dev/jgit/log/log4j2.xml");
+			
+			//Logger log = LogManager.getLogger(this.getClass().getName());		
+			Logger log = LogManager.getLogger();
+			
+			InitCommand gitCommandInit = Git.init();
+			gitCommandInit.setDirectory(objFileDir);
+			
+			Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
+			System.out.println("Git-Repository init done.");
+			
+			//+++ Prüfe, ob https oder ssh in der .git\config Datei steht
+			String sRepositoryRemoteByAlias = git.getRepository().getConfig()
+				       .getString("remote",sRepositoryRemoteAlias,"url");
+			System.out.println("Git-Repository verwendet folgendes Remote (gemaess Alias '"+ sRepositoryRemoteAlias + "'): '" + sRepositoryRemoteByAlias +"'");
+			this.setRepositoryRemote(sRepositoryRemoteByAlias);
+			
+			
+//			String sRepositoryRemote = this.getRepositoryRemote();
+//			System.out.println("Git-Repository verwendet folgendes Remote (gemaess Kommandozeilenparamter): '" + sRepositoryRemote +"'");
+//			if(!sRepositoryRemoteByAlias.equals(sRepositoryRemote)) {
+//				ExceptionZZZ ez = new ExceptionZZZ("Remote Repository vom Alias '" + sRepositoryRemoteAlias + "' liefert einen anderen String als das Remote Repository von den uebergabeparametern ('"+ sRepositoryRemoteByAlias + "' vs '" + sRepositoryRemote +"')", iERROR_PARAMETER_VALUE, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//				throw ez;
+//			}
+			
+			
+			System.out.println("STATUS BEFORE COMMIT");		
+			this.printStatus(git);
+	        //##################################################################
+	        
+			//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
+			this.addFileTrackedChanged(git);
+									
+	        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
+			long lTimestamp = DateTimeZZZ.computeTimestamp();
+			SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
+			String sDateFormated = dateFormater.format(lTimestamp);
+	
+			
+			CommitCommand gitCommandCommit = git.commit();
+			gitCommandCommit.setMessage(sDateFormated + " - Commit by Java-Class from a module of Projekt_Tool_DevEditor");
+			gitCommandCommit.call();
+	        //System.out.println("Committed file " + myFile + " to repository at " + git.getRepository().getDirectory());
+	        
+	        System.out.println("STATUS AFTER COMMIT");
+	        this.printStatus(git);
+			
+	        //Fuege neue Dateien hinzu, die noch nicht im Repository sind.
+	        //TODOGOON20260313
+	        
+	        //Mache den push	
+	        this.pushit(git);
+	       
+	        System.out.println("STATUS AFTER PUSH");
+	        this.printStatus(git);
+	       
+	        
+	        //s. ChatGPT vom 20260313
+	        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
+	        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
+	        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
+	        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
+	        
+	        
+	        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen     
 			Git git4Fetch = Git.open(objFileDir); 
 			System.out.println("Git-Repository 4 Fetch repository opened.");
-			
+				
 	    	FetchCommand gitCommandFetch = git4Fetch.fetch();
-	    	gitCommandFetch.setRemote("origin"); //Laut chat gpt nicht die URL, da die Remote Daten schon im .git/config stehen
+	    	gitCommandFetch.setRemote(sRepositoryRemoteAlias); //Laut chat gpt nicht die URL, da die Remote Daten schon im .git/config stehen
 	    	gitCommandFetch.call();
 	    	System.out.println(("FETCH DONE"));
-	    }catch(TransportException tex) {
-	    	System.out.println(tex.getMessage());
-	    } catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    		    	
+        //###############################################################	  
+		}catch(TransportException tex) {
+			ExceptionZZZ ez = new ExceptionZZZ(tex);
+			throw ez;
+		} catch (IOException ioe) {
+			ExceptionZZZ ez = new ExceptionZZZ(ioe);
+			throw ez;		
+		}catch(IllegalStateException ie) {
+			ExceptionZZZ ez = new ExceptionZZZ(ie);
+			throw ez;
+		}catch(GitAPIException gae) {
+			ExceptionZZZ ez = new ExceptionZZZ(gae);
+			throw ez;
 		}
-        
-        //###############################################################
 		return true;
 	}
 	
@@ -183,20 +217,34 @@ public class JgitStarterSSH {
 	
 	
 	
-	public void pushit(Git git) throws URISyntaxException, InvalidRemoteException, TransportException, GitAPIException {
-				
+	public void pushit(Git git) throws ExceptionZZZ {
+			
+		try {
 		//wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
 		System.out.println(SshSessionFactory.getInstance().getClass());
 		
 		// aber mal explizit als pushCommand
-		PushCommand pushCommand = git.push();		
-		pushCommand.setRemote("origin");
+		PushCommand pushCommand = git.push();
+		
+		String sRemoteRepositoryAlias = this.getRepositoryRemoteAlias();
+		pushCommand.setRemote(sRemoteRepositoryAlias);
 
 		System.setProperty("https.protocols", "TLSv1.2"); 
 		
 		// push to remote:	
 		pushCommand.call();
 		
+		//###############################################################
+		}catch(InvalidRemoteException ire) {
+			ExceptionZZZ ez = new ExceptionZZZ(ire);
+			throw ez;
+		}catch(TransportException te) {
+			ExceptionZZZ ez = new ExceptionZZZ(te);
+			throw ez;
+		}catch(GitAPIException gae) {
+			ExceptionZZZ ez = new ExceptionZZZ(gae);
+			throw ez;
+		}
 	}
 	
 	//##################################################

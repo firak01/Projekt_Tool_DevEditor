@@ -2,6 +2,7 @@ package use.tool.dev;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.util.crypt.code.ICryptZZZ;
+import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.AbstractKernelConfigZZZ;
 import basic.zKernel.GetOptZZZ;
 import basic.zKernel.IKernelConfigZZZ;
@@ -44,10 +45,14 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 	
 	@Override
 	public String[] getArgumentArrayDefault() {
-		String[] saArg = new String[3];
-		saArg[0] = "-ssh";									
-		saArg[1] = "-z";
-		saArg[2] = this.getConfigFlagzJsonDefault();
+		String[] saArg = new String[7];
+		saArg[0] = "-ssh";	//Merke: aus dem lokalen Repository, in der Datei .git\config kommt die remote URL 		 
+		saArg[1] = "-ra";   //       dazu ist der Remote Alias wichtig, per Default ist das "origin", kann aber auch anders benannt werden.
+		saArg[2] = "origin";
+		saArg[3] = "-rl";
+		saArg[4] = ConfigDEV.sPROJECT_PATH;
+		saArg[5] = "-z";
+		saArg[6] = this.getConfigFlagzJsonDefault();
 		
 		return saArg;
 	}
@@ -87,48 +92,143 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 	public String readConnectionType() throws ExceptionZZZ{
 		String sReturn = null;
 		main:{
+			boolean bReturn = false;
+			
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = this.readConnectionTypeSSH();
-			if(sReturn!=null) break main;
+			bReturn = this.isConnectionTypeSSH();
+			if(bReturn) {
+				sReturn = "ssh";
+				break main;
+			}
 			
-			sReturn = this.readConnectionTypeHTTPS();
-			if(sReturn!=null) break main;
-			
+			bReturn = this.isConnectionTypeHTTPS();
+			if(bReturn) {
+				sReturn = "https";
+				break main;
+			}
+				
 			sReturn = this.getConnectionTypeDefault();			
 		}//end main:		
 		return sReturn;
 	}
 	
 	@Override
-	public String readConnectionTypeSSH() throws ExceptionZZZ{
-		String sReturn = null;
+	public boolean isConnectionTypeSSH() throws ExceptionZZZ{
+		boolean bReturn = false;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = objOpt.readValue("ssh");			
+			String sReturn = objOpt.readValue("ssh");	
+			if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
+			
 		}//end main:		
-		return sReturn;
+		return bReturn;
 	}
 	
 	@Override
-	public String readConnectionTypeHTTPS() throws ExceptionZZZ{
+	public boolean isConnectionTypeHTTPS() throws ExceptionZZZ{
+		boolean bReturn = false;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			String sReturn = objOpt.readValue("https");
+			if(!StringZZZ.isEmpty(sReturn)) bReturn = true;
+			
+		}//end main:		
+		return bReturn;
+	}
+	
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++	
+	@Override
+	public String readRepositoryRemoteAlias() throws ExceptionZZZ {
 		String sReturn = null;
 		main:{
 			GetOptZZZ objOpt = this.getOptObject();
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = objOpt.readValue("https");			
+			sReturn = objOpt.readValue("ra");
+			if(sReturn==null){
+				sReturn = this.getRepositoryRemoteAliasDefault();
+			}
 		}//end main:		
 		return sReturn;
 	}
+	@Override
+	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ {
+		return "orign";
+	}
+	
+//	@Override
+//	public String getRepositoryRemoteDefaultSSH() throws ExceptionZZZ {		
+//		return null;
+//	}
+//	@Override
+//	public String getRepositoryRemoteDefaultHTTPS() throws ExceptionZZZ {
+//		return null;
+//	}
+	
+//	@Override
+//	public String readRepositoryRemote() throws ExceptionZZZ {
+//		String sReturn = null;
+//		main:{
+//			GetOptZZZ objOpt = this.getOptObject();
+//			if(objOpt==null) break main;
+//			if(objOpt.getFlag("isLoaded")==false) break main;
+//			
+//			sReturn = objOpt.readValue("ssh");
+//			if(!StringZZZ.isEmpty(sReturn)) break main;
+//			
+//			sReturn = objOpt.readValue("https");
+//			if(!StringZZZ.isEmpty(sReturn)) break main;
+//									
+//		}//end main:		
+//		return sReturn;
+//	}
+	
+//	@Override
+//	public String readRepositoryRemoteSSH() throws ExceptionZZZ {
+//		String sReturn = null;
+//		main:{
+//			GetOptZZZ objOpt = this.getOptObject();
+//			if(objOpt==null) break main;
+//			if(objOpt.getFlag("isLoaded")==false) break main;
+//			
+//			sReturn = objOpt.readValue("ssh");
+//			if(sReturn==null){
+//				sReturn = this.getRepositoryRemoteDefaultSSH();
+//			}
+//		}//end main:		
+//		return sReturn;
+//	}
+//	
+//	@Override
+//	public String readRepositoryRemoteHTTPS() throws ExceptionZZZ {
+//		String sReturn = null;
+//		main:{
+//			GetOptZZZ objOpt = this.getOptObject();
+//			if(objOpt==null) break main;
+//			if(objOpt.getFlag("isLoaded")==false) break main;
+//			
+//			sReturn = objOpt.readValue("https");
+//			if(sReturn==null){
+//				sReturn = this.getRepositoryRemoteDefaultHTTPS();
+//			}
+//		}//end main:		
+//		return sReturn;
+//	}
 	
 	
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++
 	@Override
 	public String getPersonalAccessTokenDefault() {
 		return ""; //Merke: GitHub verweigert das PUSHEN eines PATs durch sein Regelwerk!!!
@@ -148,4 +248,26 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 		}//end main:		
 		return sReturn;
 	}
+	
+	//++++++++++++++++++++++++++++++++++++++++++
+	@Override
+	public String getRepositoryLocalDefault() throws ExceptionZZZ {
+		return ConfigDEV.sPROJECT_PATH; //Also das eigene Verzeichnis als Default
+	}
+	@Override
+	public String readRepositoryLocal() throws ExceptionZZZ {		
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("rl");
+			if(sReturn==null){
+				sReturn = this.getRepositoryLocalDefault();
+			}
+		}//end main:		
+		return sReturn;
+	}
+	
 }
