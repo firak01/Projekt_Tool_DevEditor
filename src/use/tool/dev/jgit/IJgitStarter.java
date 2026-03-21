@@ -1,5 +1,7 @@
 package use.tool.dev.jgit;
 
+import org.eclipse.jgit.api.Git;
+
 import basic.zBasic.ExceptionZZZ;
 
 public interface IJgitStarter {
@@ -14,4 +16,11 @@ public interface IJgitStarter {
 	public void setRepositoryRemoteAlias(String sRepositoryRemote) throws ExceptionZZZ;
 	
 	public boolean startit() throws ExceptionZZZ;
+	
+	//+++ Arbeit mit dem GitObject
+	public Git getGitObject() throws ExceptionZZZ;
+	public void setGitObject(Git git) throws ExceptionZZZ;
+	
+	public String searchRepositoryRemote() throws ExceptionZZZ;
+	public String searchRepositoryRemote(String sRepositoryRemoteAlias) throws ExceptionZZZ;
 }

@@ -92,8 +92,10 @@ git@github.com:firak01/...
 			//RepositoryRemote	SSH			git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
 			//RepositoryRemote	HTTPS		https://github.com/firak01/Projekt_Kernel02_JAZDummy.git	
 			//RemoteAlias					JAZDummy
-			//man braucht die remote repository angabe nicht..... liegt in .git/config Datei, unter dem Alias .......                also Konsolenstring:			-ssh git@github.com:firak01/Projekt_Kernel02_JAZDummy.git -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy
-			//also Konsolenstring:			-ssh -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy -ra JAZDummy
+			//man braucht die remote repository angabe nicht..... liegt in .git/config Datei, unter dem Alias ....... 
+			//aber dort ist vielleicht ein anderes Protokoll definiert
+			//also Konsolenstring:			-https https://github.com/firak01/Projekt_Kernel02_JAZDummy.git -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy
+			//also Konsolenstring:			-ssh -ra JAZDummy -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy
 			
 			//E) Zur Entwicklung (auf ERMANARICH), ein Dummy Verzeichnis
 			//RepositoryLocal	C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
@@ -108,39 +110,37 @@ git@github.com:firak01/...
 			}
 			
 			String sRepositoryRemoteAlias = objConfig.readRepositoryRemoteAlias();
-			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
-				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
+//			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+//				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//				throw ez;
+//			}	
 			
 			
 			//Unterschiedliche Wege, TODOGOON20260316;//Mache ein Interface, das dann .startit() als Methode enthaelt
 			//-https oder -ssh
 			//mit jeweils unterschiedlichem Remote Repository
 			//PAT nur bei HTTPS notwendig
-//			String sRepositoryRemote = null;			
+			String sRepositoryRemote = null;			
 			switch(sConnectionType) {
 			case"ssh":
-				//B) TUBAF
-//				sRepositoryRemote = objConfig.readRepositoryRemoteSSH();
-//				if(StringZZZ.isEmpty(sRepositoryRemote)){
-//					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
-											
+				sRepositoryRemote = objConfig.readRepositoryRemoteSSH();
+				if(StringZZZ.isEmpty(sRepositoryRemote) && StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+														
 				JgitStarterSSH objStarterSSH = new JgitStarterSSH();
 				objStarterSSH.setRepositoryLocal(sRepositoryLocal);
+				objStarterSSH.setRepositoryRemote(sRepositoryRemote);
 				objStarterSSH.setRepositoryRemoteAlias(sRepositoryRemoteAlias);					
 				objStarterSSH.startit();
 				break;
-			case "https":
-				//A) DEV04				
-//				sRepositoryRemote = objConfig.readRepositoryRemoteHTTPS();
-//				if(StringZZZ.isEmpty(sRepositoryRemote)){
-//					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//					throw ez;
-//				}
+			case "https":			
+				sRepositoryRemote = objConfig.readRepositoryRemoteHTTPS();
+				if(StringZZZ.isEmpty(sRepositoryRemote) && StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote HTTPS Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
 				
 		
 				String sPat = objConfig.readPersonalAccessToken();
@@ -150,7 +150,8 @@ git@github.com:firak01/...
 				}
 				
 				JgitStarterHTTPS objStarterHTTPS = new JgitStarterHTTPS();
-				objStarterHTTPS.setRepositoryLocal(sRepositoryLocal);				
+				objStarterHTTPS.setRepositoryLocal(sRepositoryLocal);
+				objStarterHTTPS.setRepositoryRemote(sRepositoryRemote);
 				objStarterHTTPS.setRepositoryRemoteAlias(sRepositoryRemoteAlias);
 				objStarterHTTPS.setPersonalAccessToken(sPat);
 				objStarterHTTPS.startit();

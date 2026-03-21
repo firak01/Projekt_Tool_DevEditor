@@ -10,10 +10,12 @@ public interface IConfigDEV {
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN_DEFAULT="ssh|https|pat:ra:rl:z:"; //ConnectionType: HTTPS oder SSH
+	final static String sPATTERN_DEFAULT="ssh|https|rl:pat:rr:rra:z:"; //ConnectionType: HTTPS oder SSH
 													  //gefolgt jeweils von einer URL
 													  //pat = Personal Access Token fuer HTTPS
 													  //rl  = Repository local
+													  //rr  = Repository remote
+													  //rra  = Repository remote alias. Wie in .git\config Datei angegeben
 	                                              //z = Flags, die dann JSON aehnlich uebergeben werden
 	final static String sFLAGZ_DEFAULT="{}";      //leerer JSON aehnlicher String für zu setztende Flags, z.B. gefuellt {"DEBUGUI_PANELLABEL_ON":true}
 	
@@ -29,12 +31,15 @@ public interface IConfigDEV {
 	public String readRepositoryLocal() throws ExceptionZZZ;
 	public String getRepositoryLocalDefault() throws ExceptionZZZ;
 	
-	//public String readRepositoryRemote() throws ExceptionZZZ;
-	//schon mal gar nicht     public String getRepositoryRemoteDefaultSSH() throws ExceptionZZZ;
-	//public String readRepositoryRemoteSSH() throws ExceptionZZZ;
-	//schon mal gar nicht public String getRepositoryRemoteDefaultHTTPS() throws ExceptionZZZ;
-	//public String readRepositoryRemoteHTTPS() throws ExceptionZZZ;
-	
+	//Verwende das ueber diesen Alias definerte remote Repository
 	public String readRepositoryRemoteAlias() throws ExceptionZZZ;
 	public String getRepositoryRemoteAliasDefault() throws ExceptionZZZ;
+	
+	//Die URL zum Repostiory direkte angeben als Alternative zum in .git/config ueber einen Alias definierte remote Repository.
+	public String readRepositoryRemote() throws ExceptionZZZ;
+	public String getRepositoryRemoteDefaultSSH() throws ExceptionZZZ;
+	public String readRepositoryRemoteSSH() throws ExceptionZZZ;
+	public String getRepositoryRemoteDefaultHTTPS() throws ExceptionZZZ;
+	public String readRepositoryRemoteHTTPS() throws ExceptionZZZ;
+		
 }

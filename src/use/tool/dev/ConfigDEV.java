@@ -155,7 +155,7 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 			if(objOpt==null) break main;
 			if(objOpt.getFlag("isLoaded")==false) break main;
 			
-			sReturn = objOpt.readValue("ra");
+			sReturn = objOpt.readValue("rra");
 			if(sReturn==null){
 				sReturn = this.getRepositoryRemoteAliasDefault();
 			}
@@ -167,64 +167,67 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 		return "orign";
 	}
 	
-//	@Override
-//	public String getRepositoryRemoteDefaultSSH() throws ExceptionZZZ {		
-//		return null;
-//	}
-//	@Override
-//	public String getRepositoryRemoteDefaultHTTPS() throws ExceptionZZZ {
-//		return null;
-//	}
+	@Override
+	public String getRepositoryRemoteDefaultSSH() throws ExceptionZZZ {		
+		return null;
+	}
+	@Override
+	public String getRepositoryRemoteDefaultHTTPS() throws ExceptionZZZ {
+		return null;
+	}
 	
-//	@Override
-//	public String readRepositoryRemote() throws ExceptionZZZ {
-//		String sReturn = null;
-//		main:{
-//			GetOptZZZ objOpt = this.getOptObject();
-//			if(objOpt==null) break main;
-//			if(objOpt.getFlag("isLoaded")==false) break main;
-//			
-//			sReturn = objOpt.readValue("ssh");
-//			if(!StringZZZ.isEmpty(sReturn)) break main;
-//			
-//			sReturn = objOpt.readValue("https");
-//			if(!StringZZZ.isEmpty(sReturn)) break main;
-//									
-//		}//end main:		
-//		return sReturn;
-//	}
+	@Override
+	public String readRepositoryRemote() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("rr");
+			if(!StringZZZ.isEmpty(sReturn)) break main;
+								
+		}//end main:		
+		return sReturn;
+	}
 	
-//	@Override
-//	public String readRepositoryRemoteSSH() throws ExceptionZZZ {
-//		String sReturn = null;
-//		main:{
-//			GetOptZZZ objOpt = this.getOptObject();
-//			if(objOpt==null) break main;
-//			if(objOpt.getFlag("isLoaded")==false) break main;
-//			
-//			sReturn = objOpt.readValue("ssh");
-//			if(sReturn==null){
-//				sReturn = this.getRepositoryRemoteDefaultSSH();
-//			}
-//		}//end main:		
-//		return sReturn;
-//	}
-//	
-//	@Override
-//	public String readRepositoryRemoteHTTPS() throws ExceptionZZZ {
-//		String sReturn = null;
-//		main:{
-//			GetOptZZZ objOpt = this.getOptObject();
-//			if(objOpt==null) break main;
-//			if(objOpt.getFlag("isLoaded")==false) break main;
-//			
-//			sReturn = objOpt.readValue("https");
-//			if(sReturn==null){
-//				sReturn = this.getRepositoryRemoteDefaultHTTPS();
-//			}
-//		}//end main:		
-//		return sReturn;
-//	}
+	@Override
+	public String readRepositoryRemoteSSH() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			String sSsh = objOpt.readValue("ssh");
+			if(StringZZZ.isEmpty(sSsh)) break main;
+			
+			sReturn = objOpt.readValue("rr");
+			if(StringZZZ.isEmpty(sReturn)) {
+				sReturn = this.getRepositoryRemoteDefaultSSH();
+			}
+		}//end main:		
+		return sReturn;
+	}
+	
+	@Override
+	public String readRepositoryRemoteHTTPS() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			String sHttps = objOpt.readValue("https");
+			if(StringZZZ.isEmpty(sHttps)) break main;
+			
+			sReturn = objOpt.readValue("rr");
+			if(StringZZZ.isEmpty(sReturn)) {
+				sReturn = this.getRepositoryRemoteDefaultHTTPS();
+			}
+		}//end main:		
+		return sReturn;
+	}
 	
 	
 	
