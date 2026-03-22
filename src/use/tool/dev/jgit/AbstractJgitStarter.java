@@ -13,6 +13,7 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import use.tool.dev.IConfigDEV;
 
 public abstract class AbstractJgitStarter implements IJgitStarter, IConstantZZZ{
 	protected volatile Git gitObject = null;
@@ -108,8 +109,12 @@ public abstract class AbstractJgitStarter implements IJgitStarter, IConstantZZZ{
 	
 	
 	@Override
-	public abstract boolean startit() throws ExceptionZZZ;
+	public abstract boolean pushit(IConfigDEV objConfig) throws ExceptionZZZ;
 
+	@Override
+	public abstract boolean pullit(IConfigDEV objConfig) throws ExceptionZZZ;
+
+	
 	//############# STATIC METHODEN
 	//Manchmal ist nichts zu fetchen, dann wird ein Fehler geworfen.
 	//Das ist unschoen, darum Fehler abfangen

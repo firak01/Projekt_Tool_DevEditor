@@ -45,14 +45,15 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 	
 	@Override
 	public String[] getArgumentArrayDefault() {
-		String[] saArg = new String[7];
-		saArg[0] = "-ssh";	//Merke: aus dem lokalen Repository, in der Datei .git\config kommt die remote URL 		 
-		saArg[1] = "-ra";   //       dazu ist der Remote Alias wichtig, per Default ist das "origin", kann aber auch anders benannt werden.
-		saArg[2] = "origin";
-		saArg[3] = "-rl";
-		saArg[4] = ConfigDEV.sPROJECT_PATH;
-		saArg[5] = "-z";
-		saArg[6] = this.getConfigFlagzJsonDefault();
+		String[] saArg = new String[8];
+		saArg[0] = "-pull";
+		saArg[1] = "-ssh";	//Merke: aus dem lokalen Repository, in der Datei .git\config kommt die remote URL 		 
+		saArg[2] = "-ra";   //       dazu ist der Remote Alias wichtig, per Default ist das "origin", kann aber auch anders benannt werden.
+		saArg[3] = "origin";
+		saArg[4] = "-rl";
+		saArg[5] = ConfigDEV.sPROJECT_PATH;
+		saArg[6] = "-z";
+		saArg[7] = this.getConfigFlagzJsonDefault();
 		
 		return saArg;
 	}
@@ -84,6 +85,35 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 	
 	//######################################
 	//### Spezielle Argumente, die nix mit dem Kernel zu tun haben
+	
+	@Override
+	public String readActionPull() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("pull");			
+		}//end main:		
+		return sReturn;
+	}
+	
+	@Override
+	public String readActionPush() throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			GetOptZZZ objOpt = this.getOptObject();
+			if(objOpt==null) break main;
+			if(objOpt.getFlag("isLoaded")==false) break main;
+			
+			sReturn = objOpt.readValue("push");			
+		}//end main:		
+		return sReturn;
+	}
+	
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++
 	@Override
 	public String getConnectionTypeDefault() {
 		return "ssh";

@@ -1,17 +1,12 @@
 package use.tool.dev.jgit.ssh;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.PushCommand;
@@ -27,6 +22,7 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
+import use.tool.dev.IConfigDEV;
 import use.tool.dev.jgit.AbstractJgitStarter;
 import use.tool.dev.jgit.JgitStarterMain;
 import use.tool.dev.jgit.https.JgitStarterHTTPS;
@@ -35,20 +31,66 @@ import use.tool.dev.jgit.https.JgitStarterHTTPS;
 
 public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterSSH{
 	
-	@Override
-	public boolean startit() throws ExceptionZZZ {	
-		try {
+	@Override 
+	public boolean pullit(IConfigDEV objConfig) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			if(objConfig==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+						
+			//################################################
+			//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
 			
+		}//end main:
+		return bReturn;
+	}
+	
+	@Override
+	public boolean pushit(IConfigDEV objConfig) throws ExceptionZZZ {	
+		boolean bReturn = false;
+		main:{
+		try {
+			if(objConfig==null) {
+				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+						
+			//################################################
+			//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
+			String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
+//			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+//				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+//				throw ez;
+//			}
+			
+			String sRepositoryRemoteIn = objConfig.readRepositoryRemoteSSH();
+			if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			
+			String sRepositoryLocalIn = objConfig.readRepositoryLocal();
+			if(StringZZZ.isEmpty(sRepositoryLocalIn)){
+				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+				throw ez;
+			}
+			
+			
+			//+++++++++++++++++++++++
+			this.setRepositoryLocal(sRepositoryLocalIn);
+			this.setRepositoryRemote(sRepositoryRemoteIn);
+			this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
+			//#####################################################################
+			
+			//+++++++++++++++++++++++++++++++++++++++++++++++++
 			//Konfiguriere JGit für SSH
 			//+++ Zugriff sicherstellen
 			JGitSshConfigZZZ.configure();
 			System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
 				
-			//Zwei verschiedene lokale Repos, je nachdem welches Eclipse
-			//A) auf TUBAF - HISinOne Eclipse:
-			//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
-			//B) auf TUBAF (Oxygen Version) für Z-Kernel Entwicklung
-			//File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
 			String sDirectoryRepositoryLocal = this.getRepositoryLocal();
 			if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
 				ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
@@ -60,26 +102,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
 				throw ez;				
 			}
-			//Auf Ermanarich, der HISinOne Tomcat
-			//File objFileDir = new File("C:\\repo\\Eclipse202312\\HIS_QISSERVER_FGL");
-			
-			//Zur Entwicklung (auf DEV04), ein Dummy Verzeichnis
-			//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen_V01\\Projekt_Kernel02_JAZDummy"); 
-			
-			//Zur Entwicklung (auf ERMANARICH), ein Dummy Verzeichnis
-			//File objFileDir = new File("C:\\1fgl\\repo\\EclipseOxygen\\Projekt_Kernel02_JAZDummy");
-	
-			
-			//Trotz Einbinden von  in pom.xml Fehlermeldung;
-			//ERROR StatusLogger Log4j2 could not find a logging implementation. Please add log4j-core to the classpath. Using SimpleLogger to log to the console
-			//Lösung dazu:
-			//https://stackoverflow.com/questions/47881821/error-statuslogger-log4j2-could-not-find-a-logging-implementation
-			//TODOGOON20260310;//jetzt wird eine logdatei all.log im Root des Projektordners angelegt. Das ist schlecht/unnoetig für GIT. Dort weg.
-			System.setProperty("log4j.configurationFile","./use/tool/dev/jgit/log/log4j2.xml");
-			
-			//Logger log = LogManager.getLogger(this.getClass().getName());		
-			Logger log = LogManager.getLogger();
-			
+					
 			InitCommand gitCommandInit = Git.init();
 			gitCommandInit.setDirectory(objFileDir);
 			
@@ -144,19 +167,12 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 	        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
 	        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
 	        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
-	        
-	        
-	        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen     
-//			Git git4Fetch = Git.open(objFileDir); 
-//			System.out.println("Git-Repository 4 Fetch repository opened.");
-//				
-//	    	FetchCommand gitCommandFetch = git4Fetch.fetch();
-//	    	gitCommandFetch.setRemote(sRepositoryRemoteAlias); //Laut chat gpt nicht die URL, da die Remote Daten schon im .git/config stehen
-//	    	gitCommandFetch.call();
-	        
+	        	        
+	        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen     	        
 	        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
 		    System.out.println(("FETCH DONE"));
-		  		    	
+		  		  
+		    bReturn = true;
         //###############################################################	  
 		}catch(TransportException tex) {
 			ExceptionZZZ ez = new ExceptionZZZ(tex);
@@ -168,7 +184,8 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 			ExceptionZZZ ez = new ExceptionZZZ(gae);
 			throw ez;
 		}
-		return true;
+		}//end main:
+		return bReturn;
 	}
 	
 	
@@ -218,9 +235,10 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 	}
 	
 	
-	
-	public void pushit(Git git) throws ExceptionZZZ {
-			
+	@Override
+	public boolean pushit(Git git) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
 		try {
 		//wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
 		System.out.println(SshSessionFactory.getInstance().getClass());
@@ -236,6 +254,7 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 		// push to remote:	
 		pushCommand.call();
 		
+		bReturn = true;
 		//###############################################################
 		}catch(InvalidRemoteException ire) {
 			ExceptionZZZ ez = new ExceptionZZZ(ire);
@@ -247,6 +266,8 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 			ExceptionZZZ ez = new ExceptionZZZ(gae);
 			throw ez;
 		}
+		}//end main:
+		return bReturn;
 	}
 	
 	//##################################################

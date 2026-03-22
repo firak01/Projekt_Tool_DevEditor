@@ -1,9 +1,14 @@
 package use.tool.dev.jgit.https;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.transport.CredentialsProvider;
+
 import basic.zBasic.ExceptionZZZ;
 import use.tool.dev.jgit.IJgitStarter;
 
 public interface IJgitStarterHTTPS extends IJgitStarter{
 	public void setPersonalAccessToken(String sPat) throws ExceptionZZZ;
 	public String getPersonalAccessToken() throws ExceptionZZZ;
+	
+	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ;
 }

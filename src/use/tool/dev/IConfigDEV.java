@@ -10,7 +10,7 @@ public interface IConfigDEV {
 	//        Moeglich ist auch ein Pipe "|" nachfolgend. D.h. es gibt dazu keinen Wert.
 	//        Entsprechend wird ein Wert ohne "|" gesehen.
 	//Merke2: Es ist auch moeglich Argumente mit mehr als 2 Zeichen zu definieren.
-	final static String sPATTERN_DEFAULT="ssh|https|rl:pat:rr:rra:z:"; //ConnectionType: HTTPS oder SSH
+	final static String sPATTERN_DEFAULT="pull|push|ssh|https|rl:pat:rr:rra:z:"; //ConnectionType: HTTPS oder SSH
 													  //gefolgt jeweils von einer URL
 													  //pat = Personal Access Token fuer HTTPS
 													  //rl  = Repository local
@@ -19,6 +19,8 @@ public interface IConfigDEV {
 	                                              //z = Flags, die dann JSON aehnlich uebergeben werden
 	final static String sFLAGZ_DEFAULT="{}";      //leerer JSON aehnlicher String für zu setztende Flags, z.B. gefuellt {"DEBUGUI_PANELLABEL_ON":true}
 	
+	public String readActionPull() throws ExceptionZZZ;
+	public String readActionPush() throws ExceptionZZZ;
 	
 	public String getConnectionTypeDefault() throws ExceptionZZZ;
 	public String readConnectionType() throws ExceptionZZZ;	
