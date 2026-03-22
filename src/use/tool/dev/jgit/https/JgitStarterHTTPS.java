@@ -7,8 +7,10 @@ import java.util.Set;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
+import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
@@ -19,8 +21,10 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
+import org.eclipse.jgit.transport.OperationResult;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import basic.zBasic.ExceptionZZZ;
@@ -231,37 +235,38 @@ git.merge()
 				 */
 				
 				String sUrlPartFromRepo = JgitUtil.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
-				String sUrl = "https://firak01:" + sPAT + "@" + sUrlPartFromRepo;
-				pullCommand.setRemote(sUrl);
+				//mal anderen String probieren   String sUrl = "https://firak01:" + sPAT + "@" + sUrlPartFromRepo;
+				//Aber damit funktioniert es auch nicht direkt String sUrl = "https://" + sPAT + "@" + sUrlPartFromRepo;
+				//pullCommand.setRemote(sUrl);
 				
 				
-				//lokal: File objFileDir = new File("C:\\HIS-Workspace\\1fgl\\repo\\EclipseOxygen\\HIS_QISSERVER_FGL");
-				//remote: https://github.com/firak01/HIS_QISSERVER_FGL.git
-				//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
+				//Also zerlegen des pull in fetch und merge.
+				String sUrl = "https://" + sPAT + "@" + sUrlPartFromRepo; //eine andere Syntax als beim PUSH
+				//FetchCommand fetchCommand = git.fetch();
+				//fetchCommand.setCredentialsProvider(credentialsProvider);							
+				//fetchCommand.setRemote(sUrl);								
+				//FetchResult fetchResult =  fetchCommand.call();
 				
+				System.out.println("HTTPS-Loesung: Zerlege pull in fetch und merge");
 				
-				//aber, wenn Fehler: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
-				//Loesungsansatz:    keytool ist wohl ein Program unter dem Java JDK
-				//                   keytool -import -noprompt -trustcacerts -alias http://www.example.com -file "C:\Path\to\www.example.com.crt" -keystore cacerts
-				//Damit erstellt man einen zusaetzlichen Eintrag im Certifier-Store, der Datei cacerts ( z.B. hier: C:\java\jdk1.8.0\jre\lib\security\cacerts )
-		  
+				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
+				FetchResult fetchResult = JgitUtil.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
+				if(fetchResult==null) break main;
+				String sFetchResultMessages = fetchResult.getMessages();
+				if(sFetchResultMessages==null) break main;
 				
+				System.out.println("Fetch-Result: " + sFetchResultMessages);
 				
-				//pull from remote, hier mit Auswertung des Ergebnisses
-				pullCommand.setCredentialsProvider(credentialsProvider);
-				PullResult pullResult =  pullCommand.call();
-	
-				if (pullResult.isSuccessful()) {
-				    System.out.println("Pull erfolgreich");
-				} else {
-				    System.out.println("Pull fehlgeschlagen");
-				}
-
-				MergeResult mergeResult = pullResult.getMergeResult();
-				System.out.println(mergeResult.getMergeStatus());//pullResult.getMergeResult());
+				//++++++++++++++++++++++++++++++++
+				//String sFetchRefs = "refs/heads/main";
+				String sFetchRefs = "refs/heads/master";
+				Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs);
 				
-				FetchResult fetchResult = pullResult.getFetchResult();
-				System.out.println(fetchResult.getMessages());//pullResult.getFetchResult());
+				MergeCommand mergeCommand = git.merge();
+				mergeCommand.include(objRef);
+				
+				MergeResult mergeResult = mergeCommand.call();
+				System.out.println("Merge-Status:" + mergeResult.getMergeStatus());//pullResult.getMergeResult());
 								
 				bReturn = true;
 				//###############################################################		
