@@ -11,4 +11,5 @@ public interface IJgitStarterHTTPS extends IJgitStarter{
 	public String getPersonalAccessToken() throws ExceptionZZZ;
 	
 	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ;
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ;
 }

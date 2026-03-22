@@ -7,4 +7,5 @@ import use.tool.dev.jgit.IJgitStarter;
 
 public interface IJgitStarterSSH extends IJgitStarter{
 	public boolean pushit(Git git) throws ExceptionZZZ;
+	public boolean pullit(Git git) throws ExceptionZZZ;
 }

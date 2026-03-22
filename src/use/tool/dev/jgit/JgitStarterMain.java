@@ -98,8 +98,7 @@ public class JgitStarterMain implements IConstantZZZ{
 		try {												
 			String sAction=null;
 			ArrayListZZZ<String>listasAction = new ArrayListZZZ<String>();
-			String[]saAction=null;
-			
+						
 			//Trotz Einbinden von  in pom.xml Fehlermeldung;
 			//ERROR StatusLogger Log4j2 could not find a logging implementation. Please add log4j-core to the classpath. Using SimpleLogger to log to the console
 			//Lösung dazu:
@@ -110,8 +109,11 @@ public class JgitStarterMain implements IConstantZZZ{
 			//Logger log = LogManager.getLogger(this.getClass().getName());		
 			Logger log = LogManager.getLogger();
 			
-			
-			
+			//wg Fehler: Caused by: javax.net.ssl.SSLException: Received fatal alert: protocol_version
+			//Github benoetigt TLS Version 1.2 mindestens (kann sogar von WinXP bereitgestellt werden).
+			//System.setProperty("https.protocols", "TLSv1");		
+			System.setProperty("https.protocols", "TLSv1.2"); 
+						
 			//### Argumente entgegenzunehmen
 			ConfigDEV objConfig = new ConfigDEV(args);
 			

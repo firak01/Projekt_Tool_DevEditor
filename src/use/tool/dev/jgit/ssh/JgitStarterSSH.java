@@ -9,6 +9,9 @@ import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
+import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.StatusCommand;
@@ -16,6 +19,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.SshSessionFactory;
 
 import basic.zBasic.ExceptionZZZ;
@@ -35,155 +39,273 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 	public boolean pullit(IConfigDEV objConfig) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-			if(objConfig==null) {
-				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+			try {
+				if(objConfig==null) {
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+							
+				//################################################
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
+				//################################################
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
+				String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
+	//			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+	//				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+	//				throw ez;
+	//			}
+				
+				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteSSH();
+				if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				
+				String sRepositoryLocalIn = objConfig.readRepositoryLocal();
+				if(StringZZZ.isEmpty(sRepositoryLocalIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				
+				//+++++++++++++++++++++++
+				this.setRepositoryLocal(sRepositoryLocalIn);
+				this.setRepositoryRemote(sRepositoryRemoteIn);
+				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
+				//#####################################################################
+				
+				//+++++++++++++++++++++++++++++++++++++++++++++++++
+				//Konfiguriere JGit für SSH
+				//+++ Zugriff sicherstellen
+				JGitSshConfigZZZ.configure();
+				System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
+					
+				String sDirectoryRepositoryLocal = this.getRepositoryLocal();
+				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				File objFileDir = new File(sDirectoryRepositoryLocal);
+				if(!objFileDir.exists()) {
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+						
+				InitCommand gitCommandInit = Git.init();
+				gitCommandInit.setDirectory(objFileDir);
+				
+				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
+				this.setGitObject(git);
+				System.out.println("Git-Repository init done: " + objFileDir.getAbsolutePath());
+				
+				
+				//Mache den pull	
+		        this.pullit(git);
+		        git.close();
+		        bReturn = true;
+	        //###############################################################	  
+			}catch(TransportException tex) {
+				ExceptionZZZ ez = new ExceptionZZZ(tex);
+				throw ez;	
+			}catch(IllegalStateException ie) {
+				ExceptionZZZ ez = new ExceptionZZZ(ie);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
 				throw ez;
 			}
-						
-			//################################################
-			//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-			
 		}//end main:
 		return bReturn;
 	}
 	
 	@Override
+	public boolean pullit(Git git) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+			try {
+				//wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
+				System.out.println("Verwendete SshSessionFactory: " + SshSessionFactory.getInstance().getClass());
+				
+				// aber mal explizit als pullCommand
+				PullCommand pullCommand = git.pull();
+				
+				String sRemoteRepositoryAlias = this.getRepositoryRemoteAlias();
+				pullCommand.setRemote(sRemoteRepositoryAlias);
+		
+				
+				// pull from remote, hier mit Auswertung des Ergebnisses	
+				PullResult pullResult = pullCommand.call();
+				
+				
+				if (pullResult.isSuccessful()) {
+				    System.out.println("Pull erfolgreich");
+				} else {
+				    System.out.println("Pull fehlgeschlagen");
+				}
+
+				MergeResult mergeResult = pullResult.getMergeResult();
+				System.out.println(mergeResult.getMergeStatus());//pullResult.getMergeResult());
+				
+				FetchResult fetchResult = pullResult.getFetchResult();
+				System.out.println(fetchResult.getMessages());//pullResult.getFetchResult());
+								
+				bReturn = true;
+				//###############################################################
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
+		}//end main:
+		return bReturn;
+	}
+
+	
+	@Override
 	public boolean pushit(IConfigDEV objConfig) throws ExceptionZZZ {	
 		boolean bReturn = false;
 		main:{
-		try {
-			if(objConfig==null) {
-				ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-						
-			//################################################
-			//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
-			String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
-//			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
-//				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-//				throw ez;
-//			}
-			
-			String sRepositoryRemoteIn = objConfig.readRepositoryRemoteSSH();
-			if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
-				ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
-			
-			String sRepositoryLocalIn = objConfig.readRepositoryLocal();
-			if(StringZZZ.isEmpty(sRepositoryLocalIn)){
-				ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
-			
-			//+++++++++++++++++++++++
-			this.setRepositoryLocal(sRepositoryLocalIn);
-			this.setRepositoryRemote(sRepositoryRemoteIn);
-			this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
-			//#####################################################################
-			
-			//+++++++++++++++++++++++++++++++++++++++++++++++++
-			//Konfiguriere JGit für SSH
-			//+++ Zugriff sicherstellen
-			JGitSshConfigZZZ.configure();
-			System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
-				
-			String sDirectoryRepositoryLocal = this.getRepositoryLocal();
-			if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
-				ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;
-			}
-			
-			File objFileDir = new File(sDirectoryRepositoryLocal);
-			if(!objFileDir.exists()) {
-				ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
-				throw ez;				
-			}
-					
-			InitCommand gitCommandInit = Git.init();
-			gitCommandInit.setDirectory(objFileDir);
-			
-			Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
-			this.setGitObject(git);
-			System.out.println("Git-Repository init done: " + objFileDir.getAbsolutePath());
-			
-			//+++ Hole die URL vom Remote Repository
-			//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
-			String sRepositoryRemote = this.getRepositoryRemote();
-			if(StringZZZ.isEmpty(sRepositoryRemote)) {
-				String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
-				if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
-					ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+			try {
+				if(objConfig==null) {
+					ExceptionZZZ ez = new ExceptionZZZ("Konfigurationsobjekt mit den entgegengenommenen Argumente der Kommandozeile.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 					throw ez;
 				}
-			}
-			if(StringZZZ.isEmpty(sRepositoryRemote)) {
-				ExceptionZZZ ez = new ExceptionZZZ("Weder Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+							
+				//################################################
+				//### Die benoetigten Parameter aus dem Argumenten des Aufrufs holen
+				String sRepositoryRemoteAliasIn = objConfig.readRepositoryRemoteAlias();
+	//			if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+	//				ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+	//				throw ez;
+	//			}
+				
+				String sRepositoryRemoteIn = objConfig.readRepositoryRemoteSSH();
+				if(StringZZZ.isEmpty(sRepositoryRemoteIn) && StringZZZ.isEmpty(sRepositoryRemoteAliasIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("URL zum entfernten/remote SSH Repository und ein zu verwendender Alias aus .git\\config", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				
+				String sRepositoryLocalIn = objConfig.readRepositoryLocal();
+				if(StringZZZ.isEmpty(sRepositoryLocalIn)){
+					ExceptionZZZ ez = new ExceptionZZZ("Pfad zum lokalen Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				
+				//+++++++++++++++++++++++
+				this.setRepositoryLocal(sRepositoryLocalIn);
+				this.setRepositoryRemote(sRepositoryRemoteIn);
+				this.setRepositoryRemoteAlias(sRepositoryRemoteAliasIn);					
+				//#####################################################################
+				
+				//+++++++++++++++++++++++++++++++++++++++++++++++++
+				//Konfiguriere JGit für SSH
+				//+++ Zugriff sicherstellen
+				JGitSshConfigZZZ.configure();
+				System.out.println("Verwendete SSH Session Factory: " + SshSessionFactory.getInstance().getClass());
+					
+				String sDirectoryRepositoryLocal = this.getRepositoryLocal();
+				if(StringZZZ.isEmpty(sDirectoryRepositoryLocal)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis, Angabe fehlt: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_MISSING, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				
+				File objFileDir = new File(sDirectoryRepositoryLocal);
+				if(!objFileDir.exists()) {
+					ExceptionZZZ ez = new ExceptionZZZ("Lokales Repository Verzeichnis existiert nicht: '" + sDirectoryRepositoryLocal + "'", iERROR_PARAMETER_VALUE, this, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;				
+				}
+						
+				InitCommand gitCommandInit = Git.init();
+				gitCommandInit.setDirectory(objFileDir);
+				
+				Git git = gitCommandInit.call(); //Merke: damit das funktioniert muss der Pfad zu git.exe in der PATH Umgebungsvariablen sein. Z.B. c:\Progamme\Git\bin
+				this.setGitObject(git);
+				System.out.println("Git-Repository init done: " + objFileDir.getAbsolutePath());
+				
+				//+++ Hole die URL vom Remote Repository
+				//TODOGOON20260320;//Plausibilitaet: Prüfe, ob https oder ssh in der .git\config Datei steht
+				String sRepositoryRemote = this.getRepositoryRemote();
+				if(StringZZZ.isEmpty(sRepositoryRemote)) {
+					String sRepositoryRemoteAlias = this.getRepositoryRemoteAlias();
+					if(StringZZZ.isEmpty(sRepositoryRemoteAlias)){
+						ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+						throw ez;
+					}
+				}
+				if(StringZZZ.isEmpty(sRepositoryRemote)) {
+					ExceptionZZZ ez = new ExceptionZZZ("Weder Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
+					throw ez;
+				}
+				this.setRepositoryRemote(sRepositoryRemote);
+				
+				//+++ SSL Zugriff sicherstellen
+				//Merke: Das Vorhandensein der notwendigen Dateien in .ssh wird vorausgesetzt
+				//
+				//+++++++++++++++++++++++++++++++++		
+				
+				System.out.println("STATUS BEFORE COMMIT");		
+				this.printStatus(git);
+		        //##################################################################
+		        
+				//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
+				this.addFileTrackedChanged(git);
+										
+		        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
+				long lTimestamp = DateTimeZZZ.computeTimestamp();
+				SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
+				String sDateFormated = dateFormater.format(lTimestamp);
+		
+				
+				CommitCommand gitCommandCommit = git.commit();
+				gitCommandCommit.setMessage(sDateFormated + " - Commit by Java-Class from a module of Projekt_Tool_DevEditor");
+				gitCommandCommit.call();
+		        //System.out.println("Committed file " + myFile + " to repository at " + git.getRepository().getDirectory());
+		        
+		        System.out.println("STATUS AFTER COMMIT");
+		        this.printStatus(git);
+				
+		        //Fuege neue Dateien hinzu, die noch nicht im Repository sind.
+		        //TODOGOON20260313
+		        
+		        //Mache den push	
+		        this.pushit(git);
+		       
+		        System.out.println("STATUS AFTER PUSH");
+		        this.printStatus(git);
+		       
+		        
+		        //s. ChatGPT vom 20260313
+		        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
+		        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
+		        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
+		        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
+		        	        
+		        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen     	        
+		        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
+			    System.out.println(("FETCH DONE"));
+			  	
+			    git.close();
+			    bReturn = true;
+	        //###############################################################	  
+			}catch(TransportException tex) {
+				ExceptionZZZ ez = new ExceptionZZZ(tex);
+				throw ez;	
+			}catch(IllegalStateException ie) {
+				ExceptionZZZ ez = new ExceptionZZZ(ie);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
 				throw ez;
 			}
-			this.setRepositoryRemote(sRepositoryRemote);
-			
-			//+++ SSL Zugriff sicherstellen
-			//Merke: Das Vorhandensein der notwendigen Dateien in .ssh wird vorausgesetzt
-			//
-			//+++++++++++++++++++++++++++++++++		
-			
-			System.out.println("STATUS BEFORE COMMIT");		
-			this.printStatus(git);
-	        //##################################################################
-	        
-			//Fuege geänderte Dateien, die schon im Repository sind, hinzu.
-			this.addFileTrackedChanged(git);
-									
-	        //Mache einen commit (mit aktuellem Datum/Uhrzeit)
-			long lTimestamp = DateTimeZZZ.computeTimestamp();
-			SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy_H:m");		
-			String sDateFormated = dateFormater.format(lTimestamp);
-	
-			
-			CommitCommand gitCommandCommit = git.commit();
-			gitCommandCommit.setMessage(sDateFormated + " - Commit by Java-Class from a module of Projekt_Tool_DevEditor");
-			gitCommandCommit.call();
-	        //System.out.println("Committed file " + myFile + " to repository at " + git.getRepository().getDirectory());
-	        
-	        System.out.println("STATUS AFTER COMMIT");
-	        this.printStatus(git);
-			
-	        //Fuege neue Dateien hinzu, die noch nicht im Repository sind.
-	        //TODOGOON20260313
-	        
-	        //Mache den push	
-	        this.pushit(git);
-	       
-	        System.out.println("STATUS AFTER PUSH");
-	        this.printStatus(git);
-	       
-	        
-	        //s. ChatGPT vom 20260313
-	        //Problem: Eclipse "registriert/bemerkt" den Push nicht (also Pfeil nach oben mit 1 dahinter wird angezeigt).
-	        //Damit in Eclipse auch der Push "registriert/bemerkt wird" muss noch ein Fetch gemacht werden.
-	        //Der letzte fetch() sorgt dafür, dass lokale Remote-Tracking-Branches synchron bleiben, 
-	        //was besonders hilfreich ist, wenn gleichzeitig ein Tool wie Eclipse auf das gleiche Repository schaut.
-	        	        
-	        //aber manchmal ist nichts zu fetchen, darum Fehler abfangen     	        
-	        JgitStarterHTTPS.fetchIgnoreNothingToFetch(objFileDir, sRepositoryRemote);
-		    System.out.println(("FETCH DONE"));
-		  		  
-		    bReturn = true;
-        //###############################################################	  
-		}catch(TransportException tex) {
-			ExceptionZZZ ez = new ExceptionZZZ(tex);
-			throw ez;	
-		}catch(IllegalStateException ie) {
-			ExceptionZZZ ez = new ExceptionZZZ(ie);
-			throw ez;
-		}catch(GitAPIException gae) {
-			ExceptionZZZ ez = new ExceptionZZZ(gae);
-			throw ez;
-		}
 		}//end main:
 		return bReturn;
 	}
@@ -239,33 +361,31 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 	public boolean pushit(Git git) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
-		try {
-		//wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
-		System.out.println(SshSessionFactory.getInstance().getClass());
+			try {
+				//wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
+				System.out.println("Verwendete SshSessionFactory: " + SshSessionFactory.getInstance().getClass());
+				
+				// aber mal explizit als pushCommand
+				PushCommand pushCommand = git.push();
+				
+				String sRemoteRepositoryAlias = this.getRepositoryRemoteAlias();
+				pushCommand.setRemote(sRemoteRepositoryAlias);
 		
-		// aber mal explizit als pushCommand
-		PushCommand pushCommand = git.push();
-		
-		String sRemoteRepositoryAlias = this.getRepositoryRemoteAlias();
-		pushCommand.setRemote(sRemoteRepositoryAlias);
-
-		System.setProperty("https.protocols", "TLSv1.2"); 
-		
-		// push to remote:	
-		pushCommand.call();
-		
-		bReturn = true;
-		//###############################################################
-		}catch(InvalidRemoteException ire) {
-			ExceptionZZZ ez = new ExceptionZZZ(ire);
-			throw ez;
-		}catch(TransportException te) {
-			ExceptionZZZ ez = new ExceptionZZZ(te);
-			throw ez;
-		}catch(GitAPIException gae) {
-			ExceptionZZZ ez = new ExceptionZZZ(gae);
-			throw ez;
-		}
+				// push to remote:	
+				pushCommand.call();
+				
+				bReturn = true;
+				//###############################################################
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}
 		}//end main:
 		return bReturn;
 	}
