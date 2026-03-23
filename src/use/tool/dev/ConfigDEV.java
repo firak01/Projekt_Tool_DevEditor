@@ -9,13 +9,25 @@ import basic.zKernel.IKernelConfigZZZ;
 import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
 
 
-/**Klasse enth�lt die Werte, die im Kernel als default angesehen werden.
+/**Klasse enthaelt die Werte, die im Kernel als default angesehen werden.
 	 *- ApplicationKey: FGL
 	 * - SystemNumber: 01
 	 * - Verzeichnis: c:\\fglKernel\\KernelConfig
 	 * - Datei:		ZKernelConfigKernel_default.ini
 	
 	Verwende eine eigene Klasse, die KernelConfigZZZ erweitert, um für eine Spezielles Projekt andere Werte zu verwenden.
+	
+	Siehe IConfigDEV:
+	final static String sPATTERN_DEFAULT="pull|push|ssh|https|rl:pat:rr:rra:z:"; //ConnectionType: HTTPS oder SSH
+	
+	Beispiele für Kommandozeilenstrings:
+	aa) -pull -https -pat -rra orign -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
+	Problem mit dem Doppelpunkt in https: und im Dateipfad C: 
+	ab) -pull -https -pat -rr "https://github.com/firak01/Projekt_Kernel02_JAZDummy.git" -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
+	
+	ba) -pull -ssl -rra orign -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
+	bb) -pull -ssl -rr git@github.com:firak01/Projekt_Kernel02_JAZDummy.git -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy\JAZDummy
+	
  * @author lindhauer
  *
  */
@@ -48,7 +60,7 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 		String[] saArg = new String[8];
 		saArg[0] = "-pull";
 		saArg[1] = "-ssh";	//Merke: aus dem lokalen Repository, in der Datei .git\config kommt die remote URL 		 
-		saArg[2] = "-ra";   //       dazu ist der Remote Alias wichtig, per Default ist das "origin", kann aber auch anders benannt werden.
+		saArg[2] = "-rra";   //       dazu ist der Remote Alias wichtig, per Default ist das "origin", kann aber auch anders benannt werden.
 		saArg[3] = "origin";
 		saArg[4] = "-rl";
 		saArg[5] = ConfigDEV.sPROJECT_PATH;

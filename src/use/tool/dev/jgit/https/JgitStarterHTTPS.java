@@ -250,7 +250,8 @@ git.merge()
 				
 				System.out.println("HTTPS-Loesung: Zerlege pull in fetch und merge");
 				
-				TODOGOON wieder original url wie beim push arbeiten
+				//TODOGOON wieder original url wie beim push arbeiten
+				String sUrl = "https://firak01:" + sPAT + "@" + sUrlPartFromRepo;
 				
 				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
 				FetchResult fetchResult = JgitUtil.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
