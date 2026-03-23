@@ -252,26 +252,61 @@ git.merge()
 				
 				//TODOGOON wieder original url wie beim push arbeiten
 				String sUrl = "https://firak01:" + sPAT + "@" + sUrlPartFromRepo;
+				System.out.println("Url fuer Fetch: '" + sUrl + "'");
 				
 				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
 				FetchResult fetchResult = JgitUtil.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
 				if(fetchResult==null) break main;
+					
 				String sFetchResultMessages = fetchResult.getMessages();
-				if(sFetchResultMessages==null) break main;
-				
-				System.out.println("Fetch-Result: " + sFetchResultMessages);
-				
+				if(sFetchResultMessages!=null) {				
+					System.out.println("Fetch-Result: " + sFetchResultMessages);
+				}
+					
 				//++++++++++++++++++++++++++++++++
+				//siehe .git\config Datei, Zeile:
+				//fetch = +refs/heads/*:refs/remotes/origin/*
+				//Minierklaerung: 
+		/*
+				Das ist ein sogenannter RefSpec (Reference Specification).
+				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
+				
+				Aufbau allgemein:
+				[+]<Quelle>:<Ziel>
+				
+				Also:
+				Quelle (Remote-Seite)
+				refs/heads/ = alle Branches im Remote-Repository
+				 * = Wildcard → alle Branch-Namen
+
+				➡️ Bedeutet:
+				Hole alle Branches vom Remote
+				
+				
+				Ziel (lokal)
+				refs/remotes/origin/ = Remote-Tracking-Branches
+				* = gleicher Name wie Quelle
+
+				➡️ Bedeutet:
+				Speichere sie lokal als origin/branchname
+				
+				------------
+				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
+				Mit + sagst du:
+				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
+	 */
+				
 				//String sFetchRefs = "refs/heads/main";
 				String sFetchRefs = "refs/heads/master";
 				Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs);
-				
+					
+				//++++++++++++++++++++++++++++++++				
 				MergeCommand mergeCommand = git.merge();
 				mergeCommand.include(objRef);
-				
+					
 				MergeResult mergeResult = mergeCommand.call();
 				System.out.println("Merge-Status:" + mergeResult.getMergeStatus());//pullResult.getMergeResult());
-								
+																				
 				bReturn = true;
 				//###############################################################		
 			}catch(InvalidRemoteException ire) {

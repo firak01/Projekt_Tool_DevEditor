@@ -6,6 +6,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
+import org.eclipse.jgit.transport.RefSpec;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
@@ -117,6 +118,9 @@ public class JgitUtil implements IConstantZZZ {
 	) throws TransportException, GitAPIException {
 
 	    try {
+	    	
+	    	
+	    	
 	        FetchCommand fetchCommand = git.fetch();
 
 	        if (remote != null && remote.trim().length() > 0) {
@@ -126,7 +130,12 @@ public class JgitUtil implements IConstantZZZ {
 	        if (credentialsProvider != null) {
 	            fetchCommand.setCredentialsProvider(credentialsProvider);
 	        }
+	        
+	        //aus .git\config Datei:
+	        //      fetch = +refs/heads/*:refs/remotes/origin/*
+	        fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
 
+	        
 	        FetchResult result = fetchCommand.call();
 
 	        // Optional: Logging / Prüfung
