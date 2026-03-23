@@ -9,13 +9,14 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 
+import basic.zBasic.AbstractObjectWithFlagZZZ;
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
 import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import use.tool.dev.IConfigDEV;
 
-public abstract class AbstractJgitStarter implements IJgitStarter, IConstantZZZ{
+public abstract class AbstractJgitStarter extends AbstractObjectWithFlagZZZ implements IJgitStarter{
 	protected volatile Git gitObject = null;
 	
 	protected volatile String sRepositoryLocal=null;

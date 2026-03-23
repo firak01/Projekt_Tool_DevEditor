@@ -35,6 +35,7 @@ import use.tool.dev.IConfigDEV;
 import use.tool.dev.jgit.AbstractJgitStarter;
 import use.tool.dev.jgit.JgitStarterMain;
 import use.tool.dev.jgit.JgitUtil;
+import use.tool.dev.jgit.JgitUtilHTTPS;
 
 
 
@@ -147,7 +148,7 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 				//+++++++++++++++++++++++++++++++
 				        
 				//Mache den pull	
-		        this.pullit(git, credentialsProvider, sRepositoryRemote);
+		        this.pullit(git, credentialsProvider, sPAT, sRepositoryRemote);
 		        git.close();
 		        bReturn = true;
 		    //###############################################################	  
@@ -166,159 +167,19 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 	}
 	
 	@Override
-	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ {
+	public boolean pullit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
 		boolean bReturn = false;
-		main:{
-			try {	
-				// aber mal explizit als pullCommand
-				PullCommand pullCommand = git.pull();
-						
-				//An einigen Stellen wird die Syntax der URL mit Username:Token genannt.
-				//git clone https://scuzzlebuzzle:<MYTOKEN>@github.com/scuzzlebuzzle/ol3-1.git --branch=gh-pages gh-pages
-				//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/HIS_QISSERVER_FGL.git");
-				
-				//anderes Verzeichnis:
-				//lokal:
-				//remote: 
-				//pushCommand.setRemote("https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git");
-				
-				//SSH VERSION:     git@github.com:firak01/Projekt_Kernel02_JAZDummy.git
-				//https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
-				
-				
-				//TODOGOON20260321; // Die Variante mit sPAT in der URL hat den Nachteil, das dies irgendwo im Log etc. auftauchen koennte
-				//Darum versuchen dies ohne sPAT in URL zu realisieren
-				//                  //Variante A) mit sPAT in URL
-				//                  https://firak01:" + sPAT + "@github.com/firak01/Projekt_Kernel02_JAZDummy.git
-				//
-				//                  //Variante B) ohne sPAT in URL
-				//                  https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+		main:{			
+			bReturn = JgitUtilHTTPS.pullHTTPS(git, credentialsProvider, sPAT, sRepoRemote);				
+		}//end main:
+		return bReturn;
+	}
 	
-				
-				//!!!!!!!!!!!!!!!!!!
-				//Bei Pull scheint es etwas anders zu laufen:
-				/*
-				Wenn ich git.pull().setRemote(...) verwenden möchte und nicht einen in der .git\config verwendeten Namen angeben möchte. Kann ich dann auch eine URL mitgeben? Kann solch eine mitgegebene URL auch den "Personal Access Token" beinhalten?
-
-Kurz gesagt: Nein, so wie du es dir vorstellst funktioniert es mit pull() nicht.
-
-🔹 1. setRemote(...) erwartet keine URL
-
-In JGit ist:
-
-git.pull().setRemote("origin")
-
-👉 kein URL-Parameter, sondern der Name eines konfigurierten Remotes aus der .git/config.
-
-Also z. B.:
-
-[remote "origin"]
-    url = https://github.com/user/repo.git
-
-➡️ setRemote("origin") = Referenz auf diesen Eintrag
-➡️ Direkte URL ist hier nicht vorgesehen
-
-🔹 2. URL direkt übergeben? → Nur über fetch()
-
-Wenn du eine URL direkt verwenden willst, musst du den Pull zerlegen:
-
-👉 pull = fetch + merge
-
-Beispiel (HTTPS mit URL + Token)
-FetchResult fetchResult = git.fetch()
-    .setRemote("https://<token>@github.com/user/repo.git")
-    .call();
-
-git.merge()
-    .include(fetchResult.getAdvertisedRef("refs/heads/main"))
-    .call();
-				 */
-				
-				String sUrlPartFromRepo = JgitUtil.computeRepositoryUrlPartFromUrlRepo(sRepoRemote);
-				//mal anderen String probieren   String sUrl = "https://firak01:" + sPAT + "@" + sUrlPartFromRepo;
-				//Aber damit funktioniert es auch nicht direkt String sUrl = "https://" + sPAT + "@" + sUrlPartFromRepo;
-				//pullCommand.setRemote(sUrl);
-				
-				
-				//Also zerlegen des pull in fetch und merge.
-				
-				//String sUrl = "https://" + sPAT + "@" + sUrlPartFromRepo; //eine andere Syntax als beim PUSH
-				//FetchCommand fetchCommand = git.fetch();
-				//fetchCommand.setCredentialsProvider(credentialsProvider);							
-				//fetchCommand.setRemote(sUrl);								
-				//FetchResult fetchResult =  fetchCommand.call();
-				
-				System.out.println("HTTPS-Loesung: Zerlege pull in fetch und merge");
-				
-				//TODOGOON wieder original url wie beim push arbeiten
-				String sUrl = "https://firak01:" + sPAT + "@" + sUrlPartFromRepo;
-				System.out.println("Url fuer Fetch: '" + sUrl + "'");
-				
-				//Aber wenn nichts zu fetchen ist, gibt es einen Fehler
-				FetchResult fetchResult = JgitUtil.fetchIgnoreNothingToFetch(git, sUrl, credentialsProvider);
-				if(fetchResult==null) break main;
-					
-				String sFetchResultMessages = fetchResult.getMessages();
-				if(sFetchResultMessages!=null) {				
-					System.out.println("Fetch-Result: " + sFetchResultMessages);
-				}
-					
-				//++++++++++++++++++++++++++++++++
-				//siehe .git\config Datei, Zeile:
-				//fetch = +refs/heads/*:refs/remotes/origin/*
-				//Minierklaerung: 
-		/*
-				Das ist ein sogenannter RefSpec (Reference Specification).
-				Er sagt Git/JGit was von wo nach wo kopiert werden soll.
-				
-				Aufbau allgemein:
-				[+]<Quelle>:<Ziel>
-				
-				Also:
-				Quelle (Remote-Seite)
-				refs/heads/ = alle Branches im Remote-Repository
-				 * = Wildcard → alle Branch-Namen
-
-				➡️ Bedeutet:
-				Hole alle Branches vom Remote
-				
-				
-				Ziel (lokal)
-				refs/remotes/origin/ = Remote-Tracking-Branches
-				* = gleicher Name wie Quelle
-
-				➡️ Bedeutet:
-				Speichere sie lokal als origin/branchname
-				
-				------------
-				Normalerweise verweigert Git Updates, wenn sie nicht „fast-forward“ sind.
-				Mit + sagst du:
-				„Überschreibe den lokalen Stand auch dann, wenn History nicht passt“
-	 */
-				
-				//String sFetchRefs = "refs/heads/main";
-				String sFetchRefs = "refs/heads/master";
-				Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs);
-					
-				//++++++++++++++++++++++++++++++++				
-				MergeCommand mergeCommand = git.merge();
-				mergeCommand.include(objRef);
-					
-				MergeResult mergeResult = mergeCommand.call();
-				System.out.println("Merge-Status:" + mergeResult.getMergeStatus());//pullResult.getMergeResult());
-																				
-				bReturn = true;
-				//###############################################################		
-			}catch(InvalidRemoteException ire) {
-				ExceptionZZZ ez = new ExceptionZZZ(ire);
-				throw ez;
-			}catch(TransportException te) {
-				ExceptionZZZ ez = new ExceptionZZZ(te);
-				throw ez;
-			}catch(GitAPIException gae) {
-				ExceptionZZZ ez = new ExceptionZZZ(gae);
-				throw ez;
-			}
+	@Override
+	public boolean pullitIgnoreCheckoutConflicts(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{			
+			bReturn = JgitUtilHTTPS.pullIgnoreCheckoutConflictsHTTPS(git, credentialsProvider, sPAT, sRepoRemote);			
 		}//end main:
 		return bReturn;
 	}
@@ -439,7 +300,8 @@ git.merge()
         //TODOGOON20260313
         
         //Mache den push		
-        this.pushit(git, credentialsProvider, sRepositoryRemote);
+        String sPAT = this.getPersonalAccessToken();
+        this.pushit(git, credentialsProvider, sPAT, sRepositoryRemote);
        
         System.out.println("STATUS AFTER PUSH");
         this.printStatus(git);
@@ -562,7 +424,7 @@ git.merge()
 	}
 	
 	@Override
-	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sRepoRemote) throws ExceptionZZZ {
+	public boolean pushit(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 		try {		
