@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
@@ -138,23 +137,34 @@ public class JgitStarterMain implements IConstantZZZ{
 			}
 			
 			//++++++++++++++++++++++++++++++++
-			//-z  Flags, die aber noch nicht definiert sind.
-			TODOGOON20260323;//Wie nun das JSOn-Objekt in der Kommandozeile definieren
-			//für IJgitStarterHTTPS.FLAGZ.IGNORE_CHECKOUT_CONFLICTS
-			//sArg = "{\"FlagZZZ\":{\"hmFlag\":{\"XYZ\":true,\"abc\":true}}}";
-			FlagContainerZZZ objFlagContainer = null;
-			String sFlagZJson = objConfig.readFlagzJson();			
+			//-z  Flags:
+			//Per Konsole uebergeben:  -z {"IGNORE_CHECKOUT_CONFLICTS":true}
+			HashMap<String,Boolean> hmFlag = null;
+			
+			//MERKE: Das wird schon beim initialiseren von ConfigDEV gemacht. 
+			//       Von dort dann über .getHashMapFlagZPassed holen 
+						
+			
+			//Experiment mit FlagContainerZZZ als Objekt, also aus dem JSON ein Objekt machen
+			//Vielleicht einmal eine Option mit unterschiedlichen Objekten zu arbeiten.
+			FlagContainerZZZ objFlagContainer = null;					
+			String sFlagZJson = "{\"HmFlag\":{\"XYZ\":true,\"abc\":true}}"; //Merke FlagContainerZZZ hat ein public Objekt: HmFlag
 			if(!StringZZZ.isEmpty(sFlagZJson)) {
 				Gson gson = new Gson();			
-				objFlagContainer = gson.fromJson(sFlagZJson, FlagContainerZZZ.class);
-				//Merke: Erst bei einem Objekt, das FlagZ behandelt, kann der Inhalt des FlagContainers verwendet werden.
+				objFlagContainer = gson.fromJson(sFlagZJson, FlagContainerZZZ.class);			
+			}						
+			
+			//Ggfs. uebergebene Flags setzen:
+			if(objFlagContainer!=null) {
+				HashMap<String,Boolean> hmFlagByContainer = objFlagContainer.getHmFlag();				
+				for(int i=0; i< hmFlagByContainer.size(); i++) {
+					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlagByContainer, i);
+					Boolean boolFlagValue = hmFlagByContainer.get(sFlagName);
+					boolean bFlagValue = boolFlagValue.booleanValue();
+					
+					System.out.println(i + ". HmFlagByContainer: " + sFlagName + ": " + bFlagValue);					
+				}
 			}
-			
-			
-			
-			
-			
-			
 		
 			//++++++++++++++++++++++++++++++++
 			//Steuerung der Verbindung
@@ -178,16 +188,13 @@ public class JgitStarterMain implements IConstantZZZ{
 				JgitStarterSSH objStarterSSH = new JgitStarterSSH();
 				
 				//Ggfs. uebergebene Flags setzen
-				if(objFlagContainer!=null) {
-					HashMap<String,Boolean> hmFlag = objFlagContainer.getHmFlag();
-					for(int i=0; i< hmFlag.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
-						Boolean boolFlagValue = hmFlag.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterSSH.setFlag(sFlagName, bFlagValue);
-					}
+				hmFlag = objConfig.getHashMapFlagPassed();
+				for(int i=0; i< hmFlag.size(); i++) {
+					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
+					Boolean boolFlagValue = hmFlag.get(sFlagName);
+					boolean bFlagValue = boolFlagValue.booleanValue();
+					objStarterSSH.setFlag(sFlagName, bFlagValue);
 				}
-				
 				
 				for(String sActionTemp : listasAction) {				
 					switch(sActionTemp) {
@@ -216,14 +223,12 @@ public class JgitStarterMain implements IConstantZZZ{
 				JgitStarterHTTPS objStarterHTTPS = new JgitStarterHTTPS();
 	
 				//Ggfs. uebergebene Flags setzen
-				if(objFlagContainer!=null) {
-					HashMap<String,Boolean> hmFlag = objFlagContainer.getHmFlag();
-					for(int i=0; i< hmFlag.size(); i++) {
-						String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
-						Boolean boolFlagValue = hmFlag.get(sFlagName);
-						boolean bFlagValue = boolFlagValue.booleanValue();
-						objStarterHTTPS.setFlag(sFlagName, bFlagValue);
-					}
+				hmFlag = objConfig.getHashMapFlagPassed();
+				for(int i=0; i< hmFlag.size(); i++) {
+					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
+					Boolean boolFlagValue = hmFlag.get(sFlagName);
+					boolean bFlagValue = boolFlagValue.booleanValue();
+					objStarterHTTPS.setFlag(sFlagName, bFlagValue);
 				}
 				
 				for(String sActionTemp : listasAction) {				

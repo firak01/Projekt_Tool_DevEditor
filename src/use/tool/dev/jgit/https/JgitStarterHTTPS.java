@@ -148,9 +148,13 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 				//+++++++++++++++++++++++++++++++
 				        
 				//Mache den pull	
-		        this.pullit(git, credentialsProvider, sPAT, sRepositoryRemote);
+				boolean bIgnoreConflicts = this.getFlag(IJgitStarterHTTPSEnabled.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);	
+				if(bIgnoreConflicts) {
+					bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
+				}else {
+					bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemote);
+				}
 		        git.close();
-		        bReturn = true;
 		    //###############################################################	  
 			}catch(TransportException tex) {
 				ExceptionZZZ ez = new ExceptionZZZ(tex);

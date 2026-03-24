@@ -1,5 +1,6 @@
 package use.tool.dev.jgit;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import org.eclipse.jgit.api.FetchCommand;
@@ -106,9 +107,9 @@ public class JgitUtilHTTPS {
 				}
 					
 				
-				//++++++++++++++++++++++++++++++++		
+				//++++++++++++++++++++++++++++++++						
 				String sFetchRefs = "refs/heads/master";
-				Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs);
+				Ref objRef = fetchResult.getAdvertisedRef(sFetchRefs); //ohne das im Folgenden einzubinden, kommt die Fehlermeldung:    org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
 				
 				/*Minierklaerung:
 				siehe .git\config Datei, entsprechende Zeile.
@@ -143,9 +144,15 @@ public class JgitUtilHTTPS {
 				
 					
 				//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
+				System.out.println("Starte Merge:");
 				try {
 					MergeCommand mergeCommand = git.merge();
-					mergeCommand.include(objRef);
+					//geht hier nicht, da nur lokal, mergeCommand.setRemote(sUrl);
+					//Also so versuchen.
+					//mergeCommand.include(git.getRepository().resolve("FETCH_HEAD")); //ABER: Da hier 2 HEADs sind Fehler : org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
+					//Lösungsansatz: direkt den richtigen Branch verwenden
+					mergeCommand.include(git.getRepository().resolve("refs/remotes/origin/master"));					
+					mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
 						
 					MergeResult mergeResult = mergeCommand.call();
 					System.out.println("Merge-Status:" + mergeResult.getMergeStatus());
@@ -172,7 +179,10 @@ public class JgitUtilHTTPS {
 		            git.pull().call();
 		        }
 				
-				bReturn = true;			
+				bReturn = true;	
+	        }catch(IOException ioe) {
+	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
+	        	throw ez;
 			}catch(InvalidRemoteException ire) {
 				ExceptionZZZ ez = new ExceptionZZZ(ire);
 				throw ez;
@@ -301,7 +311,7 @@ public class JgitUtilHTTPS {
 	//von ChatGPT 20260320, aber für meine einfachen zwecke brauch ich kein FetchResult, also nur die ExceptionHandling uebernommen
 	public static FetchResult fetchIgnoreNothingToFetch(
 	        Git git,
-	        String remote,
+	        String sUrlRemote,
 	        CredentialsProvider credentialsProvider
 	) throws ExceptionZZZ {
 		FetchResult objReturn = null;
@@ -309,8 +319,8 @@ public class JgitUtilHTTPS {
 		    try {	    		    		    	
 		        FetchCommand fetchCommand = git.fetch();
 	
-		        if (remote != null && remote.trim().length() > 0) {
-		            fetchCommand.setRemote(remote); // kann Alias ODER URL sein
+		        if (sUrlRemote != null && sUrlRemote.trim().length() > 0) {
+		            fetchCommand.setRemote(sUrlRemote); // kann Alias ODER URL sein
 		        }
 	
 		        if (credentialsProvider != null) {
