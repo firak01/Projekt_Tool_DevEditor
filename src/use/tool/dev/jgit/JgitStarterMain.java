@@ -93,6 +93,18 @@ public class JgitStarterMain implements IConstantZZZ{
 	//RepositoryRemote	HTTPS			
 	//RemoteAlias		"origin";
 	  		
+	//########################################################
+	//### Daraus ergeben sich z.B. folgende Kommandozeilenaufrufe, teilweise mit Angabe des "Personal Acces Token" (PAT)
+	//PULL HTTPS: -pull -https -rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git -pat <PAT> -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy -z {'IGNORE_CHECKOUT_CONFLICTS':true}
+	//PULL SSH	: -pull -ssh -rra JAZDummy -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy
+	//
+	//PUSH HTTPS: -push -https -rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git -pat <PAT> -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy
+	//PUSH SSH	: -push -ssh -rra JAZDummy -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy
+	//
+
+	 */
+	 
+	 /*
 	 * @param args
 	 * @author Fritz Lindhauer, 22.03.2026, 07:01:47
 	 */
@@ -189,11 +201,13 @@ public class JgitStarterMain implements IConstantZZZ{
 				
 				//Ggfs. uebergebene Flags setzen
 				hmFlag = objConfig.getHashMapFlagPassed();
+				if(hmFlag!=null) {
 				for(int i=0; i< hmFlag.size(); i++) {
 					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
 					Boolean boolFlagValue = hmFlag.get(sFlagName);
 					boolean bFlagValue = boolFlagValue.booleanValue();
 					objStarterSSH.setFlag(sFlagName, bFlagValue);
+				}
 				}
 				
 				for(String sActionTemp : listasAction) {				
@@ -224,11 +238,13 @@ public class JgitStarterMain implements IConstantZZZ{
 	
 				//Ggfs. uebergebene Flags setzen
 				hmFlag = objConfig.getHashMapFlagPassed();
+				if(hmFlag!=null) {
 				for(int i=0; i< hmFlag.size(); i++) {
 					String sFlagName = (String) HashMapUtilZZZ.getKeyByIndex(hmFlag, i);
 					Boolean boolFlagValue = hmFlag.get(sFlagName);
 					boolean bFlagValue = boolFlagValue.booleanValue();
 					objStarterHTTPS.setFlag(sFlagName, bFlagValue);
+				}
 				}
 				
 				for(String sActionTemp : listasAction) {				
