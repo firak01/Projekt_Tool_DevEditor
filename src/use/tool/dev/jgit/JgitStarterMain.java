@@ -95,14 +95,24 @@ public class JgitStarterMain implements IConstantZZZ{
 	  		
 	//########################################################
 	//### Daraus ergeben sich z.B. folgende Kommandozeilenaufrufe, teilweise mit Angabe des "Personal Acces Token" (PAT)
+    //AUF DEV04
 	//PULL HTTPS: -pull -https -rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git -pat <PAT> -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy -z {'IGNORE_CHECKOUT_CONFLICTS':true}
 	//PULL SSH	: -pull -ssh -rra JAZDummy -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy
 	//
 	//PUSH HTTPS: -push -https -rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git -pat <PAT> -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy
 	//PUSH SSH	: -push -ssh -rra JAZDummy -rl C:\1fgl\repo\EclipseOxygen_V01\Projekt_Kernel02_JAZDummy
 	//
-
+	//
+	//AUF ERMANARRICH (Andere lokalen Verzeichnisse, Keine Aliasnamen fuer die Projekte in .git\config Datei)
+	//PULL HTTPS: -pull -https -rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git -pat <PAT> -rl C:\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy -z {'IGNORE_CHECKOUT_CONFLICTS':true}
+	//PULL SSH	: -pull -ssh -rra origin -rl C:\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy -z {'IGNORE_CHECKOUT_CONFLICTS':true}
+	//PUSH HTTPS: -push -https -rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git -pat <PAT> -rl C:\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy 
+	//PUSH SSH	: -push -ssh -rra origin -rl C:\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy 
+	
 	 */
+	
+
+	 
 	 
 	 /*
 	 * @param args

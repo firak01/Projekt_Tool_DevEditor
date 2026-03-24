@@ -29,6 +29,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import use.tool.dev.IConfigDEV;
 import use.tool.dev.jgit.AbstractJgitStarter;
 import use.tool.dev.jgit.JgitStarterMain;
+import use.tool.dev.jgit.JgitUtilSSH;
 import use.tool.dev.jgit.https.JgitStarterHTTPS;
 
 
@@ -141,17 +142,27 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 				
 				if (pullResult.isSuccessful()) {
 				    System.out.println("Pull erfolgreich");
+				    bReturn = true;
 				} else {
 				    System.out.println("Pull fehlgeschlagen");
+				    bReturn = false;
 				}
 
 				MergeResult mergeResult = pullResult.getMergeResult();
-				System.out.println(mergeResult.getMergeStatus());//pullResult.getMergeResult());
+				if(mergeResult!=null) {
+					System.out.println("MergeResult: " + mergeResult.getMergeStatus());
+				}else {
+					System.out.println("MergeResult: Kein Status zurueckgegeben.");
+				}
 				
 				FetchResult fetchResult = pullResult.getFetchResult();
-				System.out.println(fetchResult.getMessages());//pullResult.getFetchResult());
+				if(fetchResult!=null) {
+					System.out.println("FetchResult: " + fetchResult.getMessages());
+				}else {
+					System.out.println("FetchResult: Keine Meldung zurueckgegeben.");
+				}
 								
-				bReturn = true;
+				
 				//###############################################################
 			}catch(InvalidRemoteException ire) {
 				ExceptionZZZ ez = new ExceptionZZZ(ire);
@@ -240,6 +251,8 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 						ExceptionZZZ ez = new ExceptionZZZ("Alias vom Remote Repository", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
 						throw ez;
 					}
+					String sUrlSSH = this.searchRepositoryRemote(sRepositoryRemoteAlias);
+					sRepositoryRemote = JgitUtilSSH.computeRepositoryUrlPartFromUrlSSH(sUrlSSH);
 				}
 				if(StringZZZ.isEmpty(sRepositoryRemote)) {
 					ExceptionZZZ ez = new ExceptionZZZ("Weder Url direkt angegeben noch per Alias '" + sRepositoryRemoteAlias + "' ermittelbar.", iERROR_PARAMETER_MISSING, JgitStarterMain.class, ReflectCodeZZZ.getMethodCurrentName());
