@@ -12,7 +12,9 @@ import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
@@ -146,14 +148,27 @@ public class JgitUtilHTTPS {
 				//+++ Ausfuehren des merge, und Auffangen ggfs. vorhandener Konflikte
 				System.out.println("Starte Merge:");
 				try {
+					//den richtigen Branch ansteuern
+					String branch = "master"; // oder dynamisch
+
+					String localRef = "refs/remotes/origin/" + branch;
+					String remoteRef = "refs/heads/" + branch;
+					
+					//ObjectId remoteMaster = git.getRepository().resolve("refs/remotes/origin/master");
+					ObjectId remoteMaster = git.getRepository().resolve(remoteRef);
+					System.out.println("Verwende remoteMaster= '" + remoteMaster.getName() + "'");
+					System.out.println("Verwende remoteMaster= '" + remoteMaster.toString() + "'");
+					
 					MergeCommand mergeCommand = git.merge();
 					//geht hier nicht, da nur lokal, mergeCommand.setRemote(sUrl);
 					//Also so versuchen.
 					//mergeCommand.include(git.getRepository().resolve("FETCH_HEAD")); //ABER: Da hier 2 HEADs sind Fehler : org.eclipse.jgit.api.errors.InvalidMergeHeadsException: merge strategy recursive does not support 2 heads to be merged into HEAD
 					//Lösungsansatz: direkt den richtigen Branch verwenden
-					mergeCommand.include(git.getRepository().resolve("refs/remotes/origin/master"));					
+					//mergeCommand.include(git.getRepository().resolve("refs/remotes/origin/master"));					
+					mergeCommand.include(remoteMaster);
 					mergeCommand.include(objRef); //ohne das kommt die Fehlermeldung:                 org.eclipse.jgit.api.errors.InvalidConfigurationException: No value for key remote.origin.url found in configuration
-						
+					mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
+					 
 					MergeResult mergeResult = mergeCommand.call();
 					System.out.println("Merge-Status:" + mergeResult.getMergeStatus());
 																					
@@ -316,7 +331,10 @@ public class JgitUtilHTTPS {
 	) throws ExceptionZZZ {
 		FetchResult objReturn = null;
 		main:{
-		    try {	    		    		    	
+		    try {
+		        // =========================
+		        // 1. FETCH (nur ein Branch!)
+		        // =========================
 		        FetchCommand fetchCommand = git.fetch();
 	
 		        if (sUrlRemote != null && sUrlRemote.trim().length() > 0) {
@@ -327,10 +345,20 @@ public class JgitUtilHTTPS {
 		            fetchCommand.setCredentialsProvider(credentialsProvider);
 		        }
 		        
+		       
+		       
+		       
+		        
 		        //aus .git\config Datei:
 		        //      fetch = +refs/heads/*:refs/remotes/origin/*
-		        fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
-	
+		        String branch = "master";
+		        String remoteRef = "refs/heads/" + branch;
+		        String localTrackingRef = "refs/remotes/origin/" + branch;
+		        
+		        //!!! KEIN *, das wären mehrere remote Branches... dann bekommt man Probleme beim Mergen... fetchCommand.setRefSpecs(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
+		        //+ für "fast forward"
+		        fetchCommand.setRefSpecs(new RefSpec("+" + remoteRef + ":" + localTrackingRef));
+
 		        objReturn = fetchCommand.call();
 	
 		        
