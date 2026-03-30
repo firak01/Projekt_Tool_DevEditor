@@ -214,14 +214,7 @@ public class JgitUtilHTTPS {
 	}
 	
 	
-	public static boolean pullSingleBranchHTTPS(
-            Git git,
-            CredentialsProvider credentialsProvider,
-            String sPAT,
-            String remoteUrl,
-            String branch
-            
-    ) throws ExceptionZZZ {
+	public static boolean pullSingleBranchHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{
 	        try {
@@ -488,5 +481,122 @@ public class JgitUtilHTTPS {
 		}//end main:
 		 return objReturn;
 	}
+	
+	public static MergeResult pullSingleBranchWithAutoResolveHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String remoteUrl, String branch) throws ExceptionZZZ {		
+		main:{
+	        try {
+		        if (branch == null || branch.trim().isEmpty()) {
+		            branch = "master";
+		        }
+		
+		        Repository repo = git.getRepository();
+		
+		        String remoteRef = "refs/heads/" + branch;
+		        String localRef = "refs/remotes/origin/" + branch;
+		
+		        int retry = 0;
+		        int maxRetry = 2;
+		
+		        while (retry < maxRetry) {
+		            try {
+		
+		                // =========================
+		                // 1. FETCH (nur ein Branch!)
+		                // =========================
+		                FetchCommand fetch = git.fetch()
+		                        .setRemote(remoteUrl)
+		                        .setRefSpecs(new RefSpec(remoteRef + ":" + localRef));
+		
+		                if (credentialsProvider != null) {
+		                    fetch.setCredentialsProvider(credentialsProvider);
+		                }
+		
+		                fetch.call();
+		
+		                // =========================
+		                // 2. MERGE (genau 1 Head!)
+		                // =========================
+		                ObjectId remoteObject = repo.resolve(localRef);
+		
+		                if (remoteObject == null) {
+		                    throw new IllegalStateException("Remote branch not found: " + localRef);
+		                }
+		
+		                MergeCommand merge = git.merge();
+		                merge.include(remoteObject);
+		                merge.setStrategy(MergeStrategy.RECURSIVE);
+		
+		                MergeResult result = merge.call();
+		
+		                System.out.println("Merge-Status: " + result.getMergeStatus());
+		
+		                // =========================
+		                // 3. Ergebnis prüfen
+		                // =========================
+		                if (result.getMergeStatus().isSuccessful()) {
+		                    return result;
+		                }
+		
+		                if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
+		                    System.out.println("Merge conflicts detected (content-level).");
+		                    return result; // normale Merge-Konflikte (nicht Checkout)
+		                }
+		
+		                if (result.getMergeStatus().equals(MergeResult.MergeStatus.ALREADY_UP_TO_DATE)) {
+		                    return result;
+		                }
+		
+		                // andere Fälle
+		                throw new IllegalStateException("Merge failed: " + result.getMergeStatus());
+		
+		            } catch (CheckoutConflictException cce) {
+		
+		                System.out.println("CheckoutConflict erkannt – versuche automatische Bereinigung...");
+		
+		                Collection<String> paths = cce.getConflictingPaths();
+		
+		                if (paths == null || paths.isEmpty()) {
+		                    throw cce;
+		                }
+		
+		                // =========================
+		                // Konfliktdateien zurücksetzen
+		                // =========================
+		                for (String path : paths) {
+		                    System.out.println("Bereinige Datei: " + path);
+		
+		                    git.checkout()
+		                       .addPath(path)
+		                       .setForce(true)   // wichtig!
+		                       .call();
+		                }
+		
+		                retry++;
+		
+		                if (retry >= maxRetry) {
+		                    throw new IllegalStateException("Max retries reached after CheckoutConflict", cce);
+		                }
+		
+		                System.out.println("Retry Merge (" + retry + ")...");
+		            }
+		        }
+ 
+        		throw new IllegalStateException("Unexpected end of method");
+        
+	        }catch(IOException ioe) {
+	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
+	        	throw ez;
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}       
+		}//end main:		
+    }
 
-}
+}//end class

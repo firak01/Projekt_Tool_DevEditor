@@ -12,6 +12,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
@@ -153,7 +154,7 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 					//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
 					
 					String sBranch = "master";
-					bReturn = this.pullitIgnoreCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemote, sBranch);
+					bReturn = this.pullitResolveCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemote, sBranch);					
 				}else {
 					bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemote);
 				}
@@ -192,10 +193,13 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 	}
 	
 	@Override
-	public boolean pullitIgnoreCheckoutConflictsSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ {
+	public boolean pullitResolveCheckoutConflictsSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ {
 		boolean bReturn = false;
 		main:{			
-			bReturn = JgitUtilHTTPS.pullSingleBranchHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);			
+			//bReturn = JgitUtilHTTPS.pullSingleBranchHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);
+			MergeResult objMergeResult = JgitUtilHTTPS.pullSingleBranchWithAutoResolveHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);
+			MergeStatus objMergeStatus = objMergeResult.getMergeStatus();
+			bReturn = objMergeStatus.isSuccessful();
 		}//end main:
 		return bReturn;
 	}
