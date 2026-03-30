@@ -14,6 +14,7 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
@@ -211,6 +212,104 @@ public class JgitUtilHTTPS {
 	    }//end main:
 	    return bReturn;
 	}
+	
+	
+	public static boolean pullSingleBranchHTTPS(
+            Git git,
+            CredentialsProvider credentialsProvider,
+            String sPAT,
+            String remoteUrl,
+            String branch
+            
+    ) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{
+	        try {
+	
+		        if (git == null) {
+		            throw new IllegalArgumentException("git must not be null");
+		        }
+		        if (remoteUrl == null || remoteUrl.trim().isEmpty()) {
+		            throw new IllegalArgumentException("remoteUrl must not be empty");
+		        }
+		        if (branch == null || branch.trim().isEmpty()) {
+		            branch = "master"; // Default für Java 1.7 Projekte 😉
+		        }
+		
+		        Repository repo = git.getRepository();
+		
+		        String remoteRef = "refs/heads/" + branch;
+		        String localTrackingRef = "refs/remotes/origin/" + branch;
+		
+		        // =========================
+		        // 1. FETCH (nur ein Branch!)
+		        // =========================
+		        FetchCommand fetchCommand = git.fetch();
+		        fetchCommand.setRemote(remoteUrl);
+		        fetchCommand.setRefSpecs(new RefSpec(remoteRef + ":" + localTrackingRef));
+		
+		        if (credentialsProvider != null) {
+		            fetchCommand.setCredentialsProvider(credentialsProvider);
+		        }
+		
+		        fetchCommand.call();
+		
+		        // =========================
+		        // 2. MERGE (gezielt!)
+		        // =========================
+		        ObjectId remoteBranchObjectId = repo.resolve(localTrackingRef);
+		
+		        if (remoteBranchObjectId == null) {
+		            throw new IllegalStateException("Remote branch not found after fetch: " + localTrackingRef);
+		        }
+		
+		        MergeCommand mergeCommand = git.merge();
+		        mergeCommand.include(remoteBranchObjectId);
+		        mergeCommand.setStrategy(MergeStrategy.RECURSIVE);
+		
+		        MergeResult result = mergeCommand.call();
+		
+		        // =========================
+		        // 3. Ergebnis prüfen
+		        // =========================
+		        if (!result.getMergeStatus().isSuccessful()) {
+		
+		            switch (result.getMergeStatus()) {
+		
+		                case CONFLICTING:
+		                    System.out.println("Merge conflicts detected!");
+		                    // Hier kannst du später automatische Konfliktlösung einbauen
+		                    break;
+		
+		                case FAILED:
+		                    throw new IllegalStateException("Merge failed: " + result.toString());
+		
+		                case ALREADY_UP_TO_DATE:
+		                    System.out.println("Already up-to-date.");
+		                    break;
+		
+		                default:
+		                    System.out.println("Merge status: " + result.getMergeStatus());
+		            }
+		        }
+
+        		bReturn = true;
+	        }catch(IOException ioe) {
+	        	ExceptionZZZ ez = new ExceptionZZZ(ioe);
+	        	throw ez;
+			}catch(InvalidRemoteException ire) {
+				ExceptionZZZ ez = new ExceptionZZZ(ire);
+				throw ez;
+			}catch(TransportException te) {
+				ExceptionZZZ ez = new ExceptionZZZ(te);
+				throw ez;
+			}catch(GitAPIException gae) {
+				ExceptionZZZ ez = new ExceptionZZZ(gae);
+				throw ez;
+			}       
+		}//end main:
+		return bReturn;
+    }
 
 	public static boolean pullHTTPS(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote) throws ExceptionZZZ {
 		boolean bReturn = false;

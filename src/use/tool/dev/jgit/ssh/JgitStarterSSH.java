@@ -121,6 +121,63 @@ public class JgitStarterSSH extends AbstractJgitStarter implements IJgitStarterS
 		return bReturn;
 	}
 	
+//	@Override
+//	public boolean pullit(Git git) throws ExceptionZZZ {
+//		boolean bReturn = false;
+//		main:{
+//			try {
+//				//wg. Authentifizierung: Ausgabe der verwendeten SessionFactory - Klasse... ist das auch meine?
+//				System.out.println("Verwendete SshSessionFactory: " + SshSessionFactory.getInstance().getClass());
+//				
+//				// aber mal explizit als pullCommand
+//				PullCommand pullCommand = git.pull();
+//				
+//				String sRemoteRepositoryAlias = this.getRepositoryRemoteAlias();
+//				pullCommand.setRemote(sRemoteRepositoryAlias);
+//		
+//				
+//				// pull from remote, hier mit Auswertung des Ergebnisses	
+//				PullResult pullResult = pullCommand.call();
+//				
+//				
+//				if (pullResult.isSuccessful()) {
+//				    System.out.println("Pull erfolgreich");
+//				    bReturn = true;
+//				} else {
+//				    System.out.println("Pull fehlgeschlagen");
+//				    bReturn = false;
+//				}
+//
+//				MergeResult mergeResult = pullResult.getMergeResult();
+//				if(mergeResult!=null) {
+//					System.out.println("MergeResult: " + mergeResult.getMergeStatus());
+//				}else {
+//					System.out.println("MergeResult: Kein Status zurueckgegeben.");
+//				}
+//				
+//				FetchResult fetchResult = pullResult.getFetchResult();
+//				if(fetchResult!=null) {
+//					System.out.println("FetchResult: " + fetchResult.getMessages());
+//				}else {
+//					System.out.println("FetchResult: Keine Meldung zurueckgegeben.");
+//				}
+//								
+//				
+//				//###############################################################
+//			}catch(InvalidRemoteException ire) {
+//				ExceptionZZZ ez = new ExceptionZZZ(ire);
+//				throw ez;
+//			}catch(TransportException te) {
+//				ExceptionZZZ ez = new ExceptionZZZ(te);
+//				throw ez;
+//			}catch(GitAPIException gae) {
+//				ExceptionZZZ ez = new ExceptionZZZ(gae);
+//				throw ez;
+//			}
+//		}//end main:
+//		return bReturn;
+//	}
+	
 	@Override
 	public boolean pullit(Git git) throws ExceptionZZZ {
 		boolean bReturn = false;

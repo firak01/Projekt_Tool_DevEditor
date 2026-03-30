@@ -150,7 +150,10 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 				//Mache den pull	
 				boolean bIgnoreConflicts = this.getFlag(IJgitStarterHTTPSEnabled.FLAGZ.IGNORE_CHECKOUT_CONFLICTS);	
 				if(bIgnoreConflicts) {
-					bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
+					//bReturn = this.pullitIgnoreCheckoutConflicts(git, credentialsProvider, sPAT, sRepositoryRemote);
+					
+					String sBranch = "master";
+					bReturn = this.pullitIgnoreCheckoutConflictsSingleBranch(git, credentialsProvider, sPAT, sRepositoryRemote, sBranch);
 				}else {
 					bReturn = this.pullit(git, credentialsProvider, sPAT, sRepositoryRemote);
 				}
@@ -187,6 +190,18 @@ public class JgitStarterHTTPS extends AbstractJgitStarter implements IJgitStarte
 		}//end main:
 		return bReturn;
 	}
+	
+	@Override
+	public boolean pullitIgnoreCheckoutConflictsSingleBranch(Git git, CredentialsProvider credentialsProvider, String sPAT, String sRepoRemote, String sBranch) throws ExceptionZZZ {
+		boolean bReturn = false;
+		main:{			
+			bReturn = JgitUtilHTTPS.pullSingleBranchHTTPS(git, credentialsProvider, sPAT, sRepoRemote, sBranch);			
+		}//end main:
+		return bReturn;
+	}
+	
+	
+	
 			
 	//###############################################
 	
