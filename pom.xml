@@ -25,16 +25,8 @@
     </plugins>
   </build>
   <dependencies>
-	  <dependency>
-	    <groupId>org.eclipse.jgit</groupId>
-	    <artifactId>org.eclipse.jgit</artifactId>
-	    <!-- Auf der Suche nach 1.7 Version. Siehe: https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit/4.5.7.201904151645-r -->
-	   	<!-- <version>4.6.0.201612231935-r</version> --><!-- Exception in thread "main" java.lang.UnsupportedClassVersionError: org/eclipse/jgit/api/errors/GitAPIException : Unsupported major.minor version 52.0 -->
-	   	<version>4.5.7.201904151645-r</version>
-	</dependency>
 	
-	
-	<!-- fuer das Logging von jgit -->
+	<!-- fuer das Logging (nicht nur von jgit) -->
 	<dependency>
 	    <groupId>org.apache.logging.log4j</groupId>
 	    <artifactId>log4j-slf4j-impl</artifactId>
@@ -42,24 +34,12 @@
 	    <scope>compile</scope>
 	</dependency>    
    
-    <!-- fuer das Logging von jgit: Source: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+    <!-- fuer das Logging (nicht nur von jgit): Source: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
 	<dependency>
 	    <groupId>org.apache.logging.log4j</groupId>
 	    <artifactId>log4j-core</artifactId>
 	    <version>2.1</version>
 	    <scope>compile</scope>
 	</dependency>
-	
-	<!-- fuer SSH - Authentifizierung. Wichtig für "git push" -->
-	<!-- JGit Apache SSHD Based SSH Support -->
-	<!-- Source: https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit.ssh.apache -->
-	<dependency>
-	    <groupId>org.eclipse.jgit</groupId>
-	    <artifactId>org.eclipse.jgit.ssh.apache</artifactId>
-	    <version>7.5.0.202512021534-r</version>
-	    <scope>compile</scope>
-	</dependency>
-	
-
   </dependencies>
 </project>
