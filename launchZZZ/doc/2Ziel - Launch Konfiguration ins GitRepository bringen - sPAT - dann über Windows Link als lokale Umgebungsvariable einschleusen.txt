@@ -1,0 +1,47 @@
+Ziel ist es geheime Daten, z.B. Kennworte nicht direkt im Quellcode zu haben, sondern per Kommandozeilenargument zu übergeben.
+Aber in der Launch-Konfiguration sollen diese Werte auch nicht stehen, da ich die Launch-Konfiguration in das Git-Repository packen will.
+
+Gescheitert ist:
+Diese Werte als "variable" als Umgebungsvariable direkt in eine "Launch Konfiguration" in Eclipse einzubinden ist gescheitert.
+Dabei sind die Werte entweder nicht zu finden, oder in einer anderen Variante werden die einmal gefundenen Werte in die .launch Datei geschrieben und sind dann dort vorhanden.
+
+Dabei sind die wie unten übergebenene Umgebungsvariablenwerte durchaus vorhanden:
+system.getEnv("sPATZZZ") findet ihren Inhalt.
+
+Die Umgebungsvariable kann entweder durch eine Batch gesetzt werden, die Eclipse direkt aufruft, 
+oder sogar durch einen Trick in einen Windows Link:
+
+Vorschlag von ChatGPT 20260402:
+cmd /c "set MY_ENV=DEV && set MY_TRUSTSTORE=C:\my\cacerts && start "" "C:\Tools\eclipse\eclipse.exe" -data C:\Workspace\EclipseOxygenWorkspace"
+
+###  Nicht vergessen, das muss auch noch rein
+  -vmargs -Xms2048m -Xmx2048m -Dfile.encoding=UTF-8  -vm
+
+### Es funktioniert hiermit die Umgebungsvariable zu übergeben
+cmd /c "set sPATZZZ=abcxblabla && "C:\java\eclipse-jee-oxygen-3a-win32-x86_64\eclipse\eclipse.exe" -data C:\Workspace\EclipseOxygenWorkspace -vmargs -Xms2048m -Xmx2048m -Dfile.encoding=UTF-8  -vm"
+
+### Eine andere Variante mit 2x Start iat auch ein Vorschlag, aber noch nicht getestet.
+cmd /c "set sPATZZZ=abcxblabla && start "" cmd /c ""C:\java\eclipse-jee-oxygen-3a-win32-x86_64\eclipse\eclipse.exe" -data C:\Workspace\EclipseOxygenWorkspace"
+
+#########################################################################
+### Ziel ist es dann solche Argumentstrings zu haben.
+-push -https -pat ${sPATZZZ] 
+-rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git 
+-rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy
+
+-push -https -pat ${sPATZZZ} 
+-rr https://github.com/firak01/HIS_QISSERVER_FGL.git
+-rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\HIS_QISSERVER_FGL
+
+#########################################################################
+### Diese dann übersetzen durch die neue Klasse ReflectLaunchArgumentZZZ in:
+### Merke: GitHub verhindert, das PAT - Strings commited werden.
+
+-push -https -pat <PAT geheim> 
+-rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git 
+-rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy
+
+-push -https -pat <PAT geheim> 
+-rr https://github.com/firak01/HIS_QISSERVER_FGL.git
+-rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\HIS_QISSERVER_FGL
+
