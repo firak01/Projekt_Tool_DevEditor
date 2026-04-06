@@ -19,6 +19,13 @@ REM Verwende den TRUSTSORE in Eclipse in der jeweils benoetigten .launch Datei, 
 set MY_TRUSTSTORE=C:\java\jdk1.8.0\jre\lib\security\cacerts
 set MY_PROJECTALIAS=DEV
 
+REM Pfad zum lokalen Repository
+set sRLZZZ=C:\1fgl\repo\EclipseOxygen_V02\Projekt_Kernel02_JAZDummy
+
+REM Pfad zum remote Repository
+set sRRZZZ=https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+
+
 REM Zusaetzliche Umgebungsvariablen setzen. Dies passiert in der Batch, die nie ins gitHub Repository eingecheckt werden darf.
 REM Verwende CALL statt START, damit der gleiche context verwendet wird und die Umgebungsvariablen von hier dort auch vorhande sind.
 REM CALL ".\secret_starterZZZ.bat"

@@ -5,8 +5,13 @@ import use.tool.jgit.JgitStarterMain;
 public class JgitStarterMainDEV {
 	public static void main(String[] args) {
 		
-		//An die Methode des konkreten Projekts durchreichen
+		//Umgebungsvariablen an die Methode des konkreten Projekts durchreichen
+		//Sie sind pro Maschine/Eclipse Instanz ggfs. unterschiedlich
+		//Nicht vergessen: Diese Umgebungsvariablen werden NUR beim Eclipsestart(!) im entsprechenden Starter gesetzt.		
+		System.out.println(System.getenv("MY_TRUSTSTORE"));
 		System.out.println(System.getenv("sPATZZZ"));
+		System.out.println(System.getenv("sRLZZZ"));
+		System.out.println(System.getenv("sRRZZZ"));
 		JgitStarterMain.main(args);
 	}
 }
