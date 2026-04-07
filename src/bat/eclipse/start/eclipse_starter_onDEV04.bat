@@ -27,11 +27,12 @@ set MY_TRUSTSTORE=C:\java\jdk1.8.0\jre\lib\security\cacerts
 REM TODOGOON: Noch ncht genutzters DEFAULT-Projektalias... vielleicht für die Ermittlung der Java-Development-Tools 
 set MY_PROJECTALIAS=DEV
 
-REM Pfad zum lokalen Repository
-set sRLZZZ=C:\1fgl\repo\EclipseOxygen_V02\Projekt_Kernel02_JAZDummy
+REM Letztendlich der Repository Name, z.B. Projekt_Kernel02_JAZDummy wird direkt als Argument übergeben und ist nicht in den Umgebungsvariablen
+REM "Basis"-Pfad zum lokalen Repository 
+set sRLZZZ=C:\1fgl\repo\EclipseOxygen_V02
 
-REM Pfad zum remote Repository
-set sRRZZZ=https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
+REM "Basis"-Url zum remote Repository
+set sRRZZZ=https://github.com/firak01
 
 REM Zusaetzliche Umgebungsvariablen setzen. Dies passiert in der Batch, die nie ins gitHub Repository eingecheckt werden darf.
 for /f "delims=" %%i in ('"%~dp0secret_starterZZZ.bat"') do set %%i
