@@ -6,6 +6,7 @@ for /f %%i in ('"echo test_auf_zerlegung_OK"') do @echo FOR /F funktioniert? %%i
 pause
 
 
+
 @echo off
 REM ####################################################################
 REM ### START ECLIPSE PER BATCH
@@ -17,18 +18,18 @@ REM ### Umgebungsvariabeln sind nur für diese Eclipse-Session gültig
 REM ##################################################################
 
 REM Pfad zu Eclipse, den zu verwendenden Workspace und die Java VM 
-set MY_ECLIPSE=C:\java\eclipse-jee-oxygen\eclipse.exe
-set MY_DATA=c:\1fgl\Workspace\EclipseOxygen_V02
+set MY_ECLIPSE=C:\java\eclipse-jee-oxygen-3a-win32-x86_64\eclipse\eclipse.exe
+set MY_DATA=C:\Workspace\EclipseOxygenWorkspace
 set MY_JAVA=c:\java\jre8\bin\javaw.exe
 
 REM Verwende den TRUSTSORE in Eclipse in der jeweils benoetigten .launch Datei, oder Eclipse selbst:   -Djavax.net.ssl.trustStore=${env_var:MY_TRUSTSTORE}
-set MY_TRUSTSTORE=C:\java\jdk1.8.0\jre\lib\security\cacerts
+set MY_TRUSTSTORE=C:\java\jdk1.8.0_202\jre\lib\security\cacerts
 
 REM TODOGOON: Noch ncht genutzters DEFAULT-Projektalias... vielleicht für die Ermittlung der Java-Development-Tools 
 set MY_PROJECTALIAS=DEV
 
 REM Pfad zum lokalen Repository
-set sRLZZZ=C:\1fgl\repo\EclipseOxygen_V02\Projekt_Kernel02_JAZDummy
+set sRLZZZ=C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy
 
 REM Pfad zum remote Repository
 set sRRZZZ=https://github.com/firak01/Projekt_Kernel02_JAZDummy.git
