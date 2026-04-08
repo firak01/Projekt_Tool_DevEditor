@@ -11,8 +11,8 @@
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="use.tool.dev.jgit.JgitStarterMainDEV"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-push -https -pat &quot;$.{sPATZZZ#PAT per Umgebungsvariable fehlt}&quot;&#13;&#10;-rr https://github.com/firak01/HIS_QISSERVER_FGL.git&#13;&#10;-rl $.{sRLZZZ#RepositoryLocal per Umgebungsvariable fehlt}"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-push -https -pat &quot;$.{sPATZZZ#PAT per Umgebungsvariable fehlt}&quot;&#13;&#10;-rr &quot;$.{sRRZZZ#RepositoryRemote per Umgebungsvariable fehlt}&quot;&#13;&#10;-rl &quot;$.{sRLZZZ#RepositoryLocal per Umgebungsvariable fehlt}&quot;&#13;&#10;-project &quot;HIS_QISSERVER_FGL&quot;"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Projekt_Tool_DevEditor"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djavax.net.ssl.trustStore=C:\java\jdk1.8.0_202\jre\lib\security\cacerts  -Djavax.net.ssl.trustStorePassword=changeit"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djavax.net.ssl.trustStore=${env_var:MY_TRUSTSTORE}&#13;&#10;-Djavax.net.ssl.trustStorePassword=changeit"/>
 </launchConfiguration>

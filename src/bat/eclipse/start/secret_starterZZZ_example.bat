@@ -2,7 +2,7 @@
 REM #############################################################
 REM ### Beispiel einer Batch, in der Umgebungsvariablen fuer eine aufrufende Batch bereitgestellt werden.
 REM ### Ist Vorlage für die Batch secret_starterZZZ.bat, die nicht in GitHub eingecheckt werden darf,
-REM ### was durch .gitignore zu loesen ist.
+REM ### was durch .gitignore IN DIESEM VERZEICHNIS zu loesen ist.
 REM #############################################################
 
 REM #################################
@@ -23,6 +23,6 @@ REM ### Personal Access Token von GitHub, die GitHubRegeln verbieten selbst, das
 REM ### Wenn man es doch versucht, hat man das Problem den abgelehnten Commit wieder ruckgaengig zu machen
 @echo on 
 @echo sPATZZZ=<geheimer PAT - nicht in github eincheckbar - commit schlägt fehl>
-
 @echo off
+
 @echo BEENDE secret_starterZZZ_example.bat >&2
