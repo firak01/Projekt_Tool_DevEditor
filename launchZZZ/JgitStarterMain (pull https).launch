@@ -11,8 +11,8 @@
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="use.tool.jgit.JgitStarterMain"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-pull -https -pat $.{sPATZZZ} -rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git -rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen\Projekt_Kernel02_JAZDummy -z {&quot;IGNORE_CHECKOUT_CONFLICTS&quot;:true}"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-pull -https -pat $.{sPATZZZ}&#13;&#10;-rr https://github.com/firak01/Projekt_Kernel02_JAZDummy.git&#13;&#10;-rl C:\HIS-Workspace\1fgl\repo\EclipseOxygen&#13;&#10;-project &quot;Projekt_Kernel02_JAZDummy&quot;&#13;&#10;-z {&quot;IGNORE_CHECKOUT_CONFLICTS&quot;:true}"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="JAZxJgit"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djavax.net.ssl.trustStore=C:\java\jdk1.8.0_202\jre\lib\security\cacerts  -Djavax.net.ssl.trustStorePassword=changeit"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djavax.net.ssl.trustStore=${env_var:MY_TRUSTSTORE}&#13;&#10;-Djavax.net.ssl.trustStorePassword=changeit"/>
 </launchConfiguration>
