@@ -12,7 +12,8 @@ public class JgitStarterMainDEV {
 		System.out.println(System.getenv("MY_TRUSTSTORE"));
 		System.out.println(System.getenv("sPATZZZ"));
 		System.out.println(System.getenv("sRLZZZ"));
-		System.out.println(System.getenv("sRRZZZ"));		
+		System.out.println(System.getenv("sRRHZZZ"));		
+		System.out.println(System.getenv("sRRACZZZ"));
 		JgitStarterMain.main(args);
 	}
 }

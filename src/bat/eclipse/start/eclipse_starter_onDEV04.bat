@@ -28,13 +28,16 @@ REM TODOGOON: Noch ncht genutzters DEFAULT-Projektalias... vielleicht für die E
 set MY_PROJECTALIAS=DEV
 
 REM Letztendlich der Repository Name, z.B. Projekt_Kernel02_JAZDummy wird direkt als Argument übergeben und ist nicht in den Umgebungsvariablen
-REM "Basis"-Pfad zum lokalen Repository 
+REM Lokales Repository: "Basis"-Pfad 
 set sRLZZZ=C:\1fgl\repo\EclipseOxygen_V02
 
-REM "Basis-"Url zum remote Repository
-set sRRZZZ=https://github.com/firak01
+REM Remote Repository: Host
+set sRRHZZZ=github.com/
 
-REM Zusaetzliche Umgebungsvariablen setzen. Dies passiert in der Batch, die nie ins gitHub Repository eingecheckt werden darf.
+REM Remote Repository: Account
+set sRRACZZZ=firak01
+
+REM Zusaetzliche "geheime" Umgebungsvariablen setzen. Dies passiert in der Batch, die nie ins gitHub Repository eingecheckt werden darf.
 for /f "delims=" %%i in ('"%~dp0secret_starterZZZ.bat"') do set %%i
 
 @echo off
