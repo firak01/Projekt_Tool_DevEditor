@@ -31,8 +31,8 @@ REM Letztendlich der Repository Name, z.B. Projekt_Kernel02_JAZDummy wird direkt
 REM Lokales Repository: "Basis"-Pfad 
 set sRLZZZ=C:\1fgl\repo\EclipseOxygen_V02
 
-REM Remote Repository: Host
-set sRRHZZZ=github.com/
+REM Remote Repository: Host (ohne abschliessenden Slash)
+set sRRHZZZ=github.com
 
 REM Remote Repository: Account
 set sRRACZZZ=firak01

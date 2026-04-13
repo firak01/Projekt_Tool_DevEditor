@@ -31,8 +31,11 @@ REM Letztendlich der Repository Name, z.B. Projekt_Kernel02_JAZDummy wird direkt
 REM "Basis"-Pfad zum lokalen Repository 
 set sRLZZZ=C:\HIS-Workspace\1fgl\repo\EclipseOxygen
 
-REM "Basis-"Url zum remote Repository
-set sRRZZZ=https://github.com/firak01
+REM Remote Repository: Host (ohne abschliessenden Slash)
+set sRRHZZZ=github.com
+
+REM Remote Repository: Account
+set sRRACZZZ=firak01
 
 REM Zusaetzliche Umgebungsvariablen setzen. Dies passiert in der Batch, die nie ins gitHub Repository eingecheckt werden darf.
 for /f "delims=" %%i in ('"%~dp0secret_starterZZZ.bat"') do set %%i
