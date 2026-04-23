@@ -1,1 +1,1 @@
-start sync.bat toProject C:\Workspace\tomcat202412\webapps\qisserver C:\HIS-Workspace\1fgl\repo\EclipseOxygen\HIS_QISSERVER_FGL
+start sync.bat toProject C:\HIS-Workspace\1fgl\repo\EclipseOxygen\HIS_QISSERVER_FGL C:\Workspace\tomcat202412\webapps\qisserver
