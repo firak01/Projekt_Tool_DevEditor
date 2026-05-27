@@ -37,7 +37,7 @@ public class RegexAnalyseTool {
         Path inputPath = Paths.get(args[0]);
         System.out.println(inputPath.toString());
         
-        String sRegex = args[1];
+        final String sRegex = args[1];
         
        
         //final List<LineMatch> listLineMatchOuter = new ArrayList<LineMatch>();

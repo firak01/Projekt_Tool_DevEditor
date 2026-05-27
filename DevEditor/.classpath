@@ -18,5 +18,17 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZDummy"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZKernelBase"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZKernelCore"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZKernelEngine"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZKernelLogReport"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZKernelUI"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZLanguageMarkup"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZModuleExternal"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZWebFTP"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZWin32"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZxJgit"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAZxJob"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
