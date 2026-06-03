@@ -21,8 +21,11 @@ REM ### Endweder ECHO nach stderr - echo Debug >&2 - oder komplett ausstellen ob
 
 REM ### Personal Access Token von GitHub, die GitHubRegeln verbieten selbst, das commiten des PAT Strings
 REM ### Wenn man es doch versucht, hat man das Problem den abgelehnten Commit wieder ruckgaengig zu machen
-@echo on 
+@echo on
+@echo sRRHZZZ=<Host-Domain - xyz.com> 
 @echo sPATZZZ=<geheimer PAT - nicht in github eincheckbar - commit schlägt fehl>
+@echo sRRACZZZ=<Benutzername>
+
 @echo off
 
 @echo BEENDE secret_starterZZZ_example.bat >&2
