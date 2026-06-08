@@ -1,0 +1,23 @@
+REM wohl zu lang?
+-pull -ssh 
+-rrh "$.{sRRHZZZ#RepoRemote Host per Umgebungsvariable fehlt}"
+-rrac "$.{sRRACZZZ#RepoRemote Account per Umgebungsvariable fehlt}"
+-rl "$.{sRLZZZ#RepoLocal per Umgebungsvariable fehlt}"
+-project "Projekt_Kernel02_JAZDummy"
+-zlocal {"MERGE_IGNORE_CHECKOUT_CONFLICTS":true,"USE_STRATEGY_MERGE_CONFLICT_OURS":true}
+
+REM funktionierte
+-commit -ssh
+-rrh "$.{sRRHZZZ#RepositoryRemote Host per Umgebungsvariable fehlt}"
+-rrac "$.{sRRACZZZ#RepositoryRemote Account per Umgebungsvariable fehlt}"
+-rl "$.{sRLZZZ#RepositoryLocal per Umgebungsvariable fehlt}"
+-project "Projekt_Kernel02_JAZDummy"
+-comment "Test Kommentar normaler Commit per SSH"
+
+REM gekürzt hat es auch funktioniert
+-pull -ssh 
+-rrh "$.{sRRHZZZ#Remote Host fehlt}"
+-rrac "$.{sRRACZZZ#Remote Account fehlt}"
+-rl "$.{sRLZZZ#RepoLocal fehlt}"
+-project "Projekt_Kernel02_JAZDummy"
+-zlocal  {"MERGE_IGNORE_CHECKOUT_CONFLICTS":true,"USE_STRATEGY_MERGE_CONFLICT_OURS":true}
