@@ -1,6 +1,7 @@
 package use.tool.dev;
 
 import basic.zBasic.ExceptionZZZ;
+import basic.zBasic.config.AbstractConfigZZZ;
 import basic.zBasic.util.crypt.code.ICryptZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zKernel.AbstractKernelConfigZZZ;
@@ -31,9 +32,19 @@ import basic.zKernel.file.ini.IKernelEncryptionIniSolverZZZ;
  * @author lindhauer
  *
  */
-public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
-	private static String sPROJECT_PATH = "Projekt_Tool_DevEditor";
-	private static String sPROJECT_NAME = "Projekt_Tool_DevEditor"; //normalerweise kuerzer, z.B. sPROJECT_NAME = "JAZKernel";
+public class ConfigDEV extends AbstractConfigZZZ implements IConfigDEV{
+	
+	//#################################################
+	//Merke: Die Konstanten sind meist nicht final, damit sie von der konkreten Konfiguration
+	//       ueberschrieben werden koennen.
+	//       Final sind die fuer den Kernel selbst wichtige Konstanten
+	
+	
+	//#####################################################################
+	//####### Reflektion zum Gesamtprojekt
+	static String sPROJECT_DIRECTORY = "Projekt_Tool_DevEditor";
+	static String sPROJECT_NAME = "Projekt_Tool_DevEditor";
+	
 	//private static String sDIRECTORY_CONFIG_DEFAULT = "c:\\fglKernel\\KernelConfig";//Wenn der String absolut angegeben ist, so muss er auch vorhanden sein.
 	private static String sDIRECTORY_CONFIG_DEFAULT = "<z:Null/>";//Merke: Ein Leerstring ist der Root vom Classpath, z.B. in Eclipse der src-Ordner. Ein "." oder ein NULL-Wert ist der Projektordner in Eclipse
 	private static String sFILE_CONFIG_DEFAULT = "";                //wird hier nicht benutzt... z.B.: "ZKernelConfigKernel_default.ini";
@@ -63,36 +74,21 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 		saArg[2] = "-rra";   //       dazu ist der Remote Alias wichtig, per Default ist das "origin", kann aber auch anders benannt werden.
 		saArg[3] = "origin";
 		saArg[4] = "-rl";
-		saArg[5] = ConfigDEV.sPROJECT_PATH;
+		saArg[5] = ConfigDEV.sPROJECT_DIRECTORY;
 		saArg[6] = "-z";
 		saArg[7] = this.getConfigFlagzJsonDefault();
 		
 		return saArg;
 	}
 	
-	@Override
-	public String getApplicationKeyDefault() {
-		return ConfigDEV.sKEY_APPLICATION_DEFAULT;
-	}
-	@Override
-	public String getConfigDirectoryNameDefault() {
-		return ConfigDEV.sDIRECTORY_CONFIG_DEFAULT;
-	}
-	@Override
-	public String getConfigFileNameDefault() {		
-		return ConfigDEV.sFILE_CONFIG_DEFAULT;
-	}	
-	@Override
-	public String getSystemNumberDefault() {
-		return ConfigDEV.sNUMBER_SYSTEM_DEFAULT;
-}
+
 	@Override
 	public String getProjectName() {
 		return ConfigDEV.sPROJECT_NAME;
 	}
 	@Override
 	public String getProjectDirectory() {
-		return ConfigDEV.sPROJECT_PATH;
+		return ConfigDEV.sPROJECT_DIRECTORY;
 	}
 	
 	//######################################
@@ -297,7 +293,7 @@ public class ConfigDEV extends AbstractKernelConfigZZZ implements IConfigDEV{
 	//++++++++++++++++++++++++++++++++++++++++++
 	@Override
 	public String getRepositoryLocalDefault() throws ExceptionZZZ {
-		return ConfigDEV.sPROJECT_PATH; //Also das eigene Verzeichnis als Default
+		return this.getProjectDirectory(); //Also das eigene Verzeichnis als Default
 	}
 	@Override
 	public String readRepositoryLocal() throws ExceptionZZZ {		
