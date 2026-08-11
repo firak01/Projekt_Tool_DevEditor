@@ -63,4 +63,24 @@ public class SyncConfigUtilZZZ implements IConstantZZZ {
 	public static String computeKey(int iKeyCounter) throws ExceptionZZZ {
 		return "MAP_" + iKeyCounter;
 	}
+	
+	public static String computeLineForKey(int iKeyCounter, String sLineValue) throws ExceptionZZZ {
+		String sReturn = null;
+		main:{
+			if(iKeyCounter<=-1) {
+				ExceptionZZZ ez = new ExceptionZZZ("iKeyCounter", iERROR_PARAMETER_VALUE, SyncConfigUtilZZZ.class, ReflectCodeZZZ.getPositionCurrent());
+				throw ez;
+			}
+			if(StringZZZ.isEmptyNull(sLineValue)) {
+				ExceptionZZZ ez = new ExceptionZZZ("sLineValue", iERROR_PARAMETER_MISSING, SyncConfigUtilZZZ.class, ReflectCodeZZZ.getPositionCurrent());
+				throw ez;
+			}
+			
+			String sLine = computeKey(iKeyCounter);
+			sLine = sLine + "=" + sLineValue;
+			
+			sReturn = sLine;
+		}//end main:
+		return sReturn;
+	}
 }

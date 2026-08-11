@@ -4,21 +4,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
-import basic.zBasic.ReflectCodeZZZ;
 import basic.zBasic.util.abstractList.ArrayListUniqueZZZ;
+import basic.zBasic.util.abstractList.ArrayListUtilZZZ;
+import basic.zBasic.util.datatype.string.StringArrayZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.file.ResourceEasyZZZ;
-import basic.zBasic.util.system.Syso;
+import basic.zBasic.util.file.txt.stream.FileTextAppenderZZZ;
 import basic.zKernel.KernelPropertyZZZ;
 
 
@@ -42,6 +39,8 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
     private String sFile = null;
     private String sDirectory = null;
     
+    String sRootFile=null; //Das Verzeichnis, mit dem die Dateipfad-Einträge anfangen sollen.
+    
     ArrayListUniqueZZZ<String>listasFile=null;
     ArrayListUniqueZZZ<String>listasAppend=null;
     
@@ -56,6 +55,8 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	
 	       String sConfigFileName;
 	       String sConfigFileDirectory;
+	       
+	       
 	       try {	
 	    	   if(args!=null && args.length>=1) {
 	    		   sConfigFileName = args[1];
@@ -69,11 +70,21 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	        		sConfigFileDirectory = SyncConfigMain_appendFile.sCONFIGURATION_DIRECTORY_DEFAULT; //hard coded zum Entwickeln
 	        	}
 	    	   
-	    	   
+	    	   	//1. Lies die Rohdaten ein
 	        	SyncConfigConsoleUI sqlConsole = new SyncConfigConsoleUI();	        	
-	        	List<String> listEintrag = sqlConsole.readFilesAsList(); //entweder Zeilen aus der Konsole oder aus einer Datei.
-	        		        	
-	        	//1. Ermittle aus der aktuellen Konfiguration den höchsen Map Eintrag und dann den nächsten.
+	        	List<String> listEintrag = sqlConsole.readLinesAsList(); //entweder Zeilen aus der Konsole oder aus einer Datei.
+	        	System.out.println("Neue Dateipfade: Eingelesen.");
+	        	
+	        	//2. Überarbeitet die Rohdaten
+	        	//Die neuen Dateipfade müssen mit WEB-INF anfangen.
+	        	erzeuger = new SyncConfigMain_appendFile();
+	        	erzeuger.setDirectory(sConfigFileDirectory);
+	        	erzeuger.setFile(sConfigFileName);
+	        	erzeuger.setRootForFiles("WEB-INF");
+	        	listEintrag = erzeuger.normalizeLines(listEintrag);
+	        	
+	        	
+	        	//3. Ermittle aus der aktuellen Konfiguration den höchsen Map Eintrag und dann den nächsten.
 	        	//   Beispiel für eine Map - Zeile: MAP_09=WEB-INF\templates\dbinterface\hisinone\sospos-duplicate_unitPrePO4TUBAF.vm
 	        	//   Also: Teile die Zeile an dem "=" auf. ...Java Properties machen das automatisch.
 	        	String sConfigFile = FileEasyZZZ.joinFilePathName(sConfigFileDirectory, sConfigFileName);	        	
@@ -94,11 +105,33 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	        	int iKeyMax = SyncConfigUtilZZZ.getKeyMax(prop);
 	        	
 	        	String sKeyMax = SyncConfigUtilZZZ.computeKey(iKeyMax);
-	        	System.out.println("Hoechster Key Eintrag: " + sKeyMax);
+	        	System.out.println("Bisher hoechster Key Eintrag: " + sKeyMax);
 	        	
-	        	String sKeyMaxNext = SyncConfigUtilZZZ.computeKey(iKeyMax+1);
-	        	System.out.println("Naechster Key Eintrag: " + sKeyMaxNext);
+	        	//4. Hänge eine neue, ausgerechnete Zeile an
+	        	FileTextAppenderZZZ objFileAppender = new FileTextAppenderZZZ(fileConfigFile);
 	        	
+	        	int iCount = 0;
+	        	for(String sLine : listEintrag) {
+	        		iCount++;
+
+		        	//String sKeyMaxNext = SyncConfigUtilZZZ.computeKey(iKeyMax+1);
+		        	//System.out.println("Naechster Key Eintrag: " + sKeyMaxNext);
+
+		        	String sLineNext = SyncConfigUtilZZZ.computeLineForKey(iKeyMax+iCount, sLine);
+		        	System.out.println("Naechster Zeilen Eintrag: " + sLineNext);
+		        	
+		        	objFileAppender.append(sLineNext);
+	        	}
+	        	
+	        	
+	        	if(iCount >= 1) {
+	        		boolean bSaved = objFileAppender.save();
+	        		if(bSaved) {
+	        			System.out.println("Datei mit neuen Zeilenentraegen gespeichert: " + objFileAppender.getFilePathSavedLast());
+	        		}else {
+	        			System.out.println("Datei nicht gespeichert: " + objFileAppender.getFilePath());
+	        		}
+	        	}
 	        	
 	        	
 	        	
@@ -138,6 +171,16 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
         this.sDirectory = sDirectory;
     }
     
+    public String getRootForFiles() {
+        return this.sRootFile;
+    }
+
+    public void setRootForFiles(String sRootFile) {
+        this.sRootFile = sRootFile;
+    }
+    
+    
+    
     public ArrayList<String> getListFile(){
     	if(this.listasFile==null) {
     		this.listasFile = new ArrayListUniqueZZZ<String>();
@@ -168,9 +211,58 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
     public void addAppend(String sAppend) {
     	this.getListAppend().add(sAppend);
     }
-    
-    public void addFile(String sFile) {
-    	this.getListFile().add(sFile);
+
+    /** Z.B. Eingabezeile ist
+     *       qisserver/WEB-INF/templates/oooreporting/tubaf/common/footerWithLabel.odt
+     *       
+     *       Notwendig ist, insgesamt. Ergo: Abgesehen vom Key muss WEB-INF vorne stehen.
+     *       MAP_10=WEB-INF/templates/oooreporting/tubaf/stu/uitext/Exmatrikulation01.odt
+     * @param listasLine
+     * @return
+     * @throws ExceptionZZZ
+     */
+    public List<String> normalizeLines(List<String>listasLine) throws ExceptionZZZ{
+    	List<String>listasReturn = null;
+    	main:{
+    		if(listasLine==null) break main;
+    		listasReturn = new ArrayList<String>();
+    		
+    		String sRootFile = this.getRootForFiles();
+    		
+    		for(String sLine : listasLine) {
+    			if(!StringZZZ.isEmptyTrimmed(sLine)) {
+	    			System.out.println(sLine);
+	    			sLine = StringZZZ.stripFileSeparatorsLeft(sLine);
+	    			sLine = StringZZZ.stripFileSeparatorsRight(sLine);
+	    			
+	    			sLine = FileEasyZZZ.normlizeFilePath(sLine, FileEasyZZZ.cDIRECTORY_SEPARATOR);
+	    			
+	    			String[]saFilePathParts = StringZZZ.explode(sLine, FileEasyZZZ.cDIRECTORY_SEPARATOR);
+	    			if(StringArrayZZZ.contains(saFilePathParts, sRootFile)) {
+	    				//Alles vor dem Root abschneiden
+	    				ArrayList<String>listasPathPart = new ArrayList<String>();
+	    				
+	    				int iIndexFirst = StringArrayZZZ.searchIndexFirst(saFilePathParts, sRootFile);
+	    				for(int iIndex = iIndexFirst; iIndex<=saFilePathParts.length-1;iIndex++) {
+	    					listasPathPart.add(saFilePathParts[iIndex]);
+	    				}
+	    				
+	    				saFilePathParts = ArrayListUtilZZZ.toArray(listasPathPart, String.class);//Merke: Cast funktioniert nicht (String[])
+	    			}else {
+	    				//Vorweg den Root ergänzen
+	    				saFilePathParts = StringArrayZZZ.prepend(saFilePathParts, sRootFile);   				
+	    			}
+	    			
+	    			sLine = StringArrayZZZ.implode(saFilePathParts, FileEasyZZZ.cDIRECTORY_SEPARATOR);//
+	    			
+	      			listasReturn.add(sLine);
+    			}//isEmpty sLine
+    		}//end for
+    		
+    		
+    		
+    	}//end main:
+    	return listasReturn;
     }
     
 }

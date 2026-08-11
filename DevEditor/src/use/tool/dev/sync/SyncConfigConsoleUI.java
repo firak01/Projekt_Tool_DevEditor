@@ -108,7 +108,7 @@ public class SyncConfigConsoleUI {
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public List<String> readFilesAsList()throws ExceptionZZZ{
+	public List<String> readLinesAsList()throws ExceptionZZZ{
 		List<String> listasReturn = null;
 		main:{
 			try {
