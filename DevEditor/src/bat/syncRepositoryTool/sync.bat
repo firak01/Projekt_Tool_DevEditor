@@ -5,7 +5,8 @@ REM -------------------------------------------------
 REM Usage:
 REM   sync.bat toRepo|toProject SRC_BASE DST_BASE
 REM
-REM chatGPT 2026-01-29
+REM chatGPT 20260129, 
+REM         20260813 update mit "entferne doppelte Backslashe"
 REM -------------------------------------------------
 
 if "%~3"=="" (
@@ -58,6 +59,10 @@ REM )
 REM --- 20260708: Neuer robusterer Code
 for /f "tokens=1,2 delims==" %%A in ('set MAP_') do (
     set REL=%%B
+
+    REM --- Backslashes aus java.util.Properties normalisieren: \\ -> \
+    set "REL=!REL:\\=\!"
+
     set SRC_FILE=!FROM!\!REL!
     set DST_FILE=!TO!\!REL!
 
