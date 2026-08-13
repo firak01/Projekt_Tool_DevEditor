@@ -16,6 +16,7 @@ import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
 import basic.zBasic.util.file.ResourceEasyZZZ;
 import basic.zBasic.util.file.txt.stream.FileTextAppenderZZZ;
+import basic.zBasic.util.properties.PropertiesUtilZZZ;
 import basic.zKernel.KernelPropertyZZZ;
 
 
@@ -93,7 +94,7 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	        	//KernelPropertyZZZ objProperty = KernelPropertyZZZ.getInstance(".\\JUnitTest.property");
 	        	KernelPropertyZZZ objProperty = KernelPropertyZZZ.getInstance(fileConfigFile);
 	        	HashMap<File,Properties> hm = objProperty.getFileLoadedAll();
-	        	System.out.println("Vorhandene Konfigurationsdatei gelesen.");
+	        	System.out.println("Vorhandene Konfigurationsdatei gelesen: '" + fileConfigFile.getAbsolutePath() + "'");
 	        	
 	        	//Properties prop = hm.get(new File(sConfigFile)); //Merke: Der Dateipfad ist ja inzwischen konkret. Die Property ist unter dem konkreten Pfad abgelegt.
 	        	Properties prop = hm.get(fileConfigFile);
@@ -101,6 +102,15 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	        	//Key=MAP_09
 	        	//Value=WEB-INF\templates\dbinterface\hisinone\sospos-duplicate_unitPrePO4TUBAF.vm
 	        	
+	        	
+	        	//TODOGOON20260813;//Jetzt muss verhindert weden, dass Zeilen übernommen werden, die bereits schon in der Konfiguration vorhanden sind.
+	        	List<String>listEintragNewly = new ArrayList<String>();
+	        	for(String sListEintrag : listEintrag) {
+	        		boolean bExistsYet = PropertiesUtilZZZ.hasValue(prop, sListEintrag);
+	        		if(!bExistsYet) {
+	        			listEintragNewly.add(sListEintrag);
+	        		}
+	       		}	
 	        	
 	        	int iKeyMax = SyncConfigUtilZZZ.getKeyMax(prop);
 	        	
@@ -111,13 +121,13 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	        	FileTextAppenderZZZ objFileAppender = new FileTextAppenderZZZ(fileConfigFile);
 	        	
 	        	int iCount = 0;
-	        	for(String sLine : listEintrag) {
+	        	for(String sLine : listEintragNewly) {
 	        		iCount++;
 
 		        	//String sKeyMaxNext = SyncConfigUtilZZZ.computeKey(iKeyMax+1);
 		        	//System.out.println("Naechster Key Eintrag: " + sKeyMaxNext);
-
-		        	String sLineNext = SyncConfigUtilZZZ.computeLineForKey(iKeyMax+iCount, sLine);
+	        		String sLineEsacaped = StringZZZ.escapeFileSeparators(sLine);
+		        	String sLineNext = SyncConfigUtilZZZ.computeLineForKey(iKeyMax+iCount, sLineEsacaped);
 		        	System.out.println("Naechster Zeilen Eintrag: " + sLineNext);
 		        	
 		        	objFileAppender.append(sLineNext);
@@ -235,7 +245,7 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	    			sLine = StringZZZ.stripFileSeparatorsLeft(sLine);
 	    			sLine = StringZZZ.stripFileSeparatorsRight(sLine);
 	    			
-	    			sLine = FileEasyZZZ.normlizeFilePath(sLine, FileEasyZZZ.cDIRECTORY_SEPARATOR);
+	    			sLine = FileEasyZZZ.normalizeFilePath(sLine, FileEasyZZZ.cDIRECTORY_SEPARATOR);
 	    			
 	    			String[]saFilePathParts = StringZZZ.explode(sLine, FileEasyZZZ.cDIRECTORY_SEPARATOR);
 	    			if(StringArrayZZZ.contains(saFilePathParts, sRootFile)) {
@@ -254,6 +264,8 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	    			}
 	    			
 	    			sLine = StringArrayZZZ.implode(saFilePathParts, FileEasyZZZ.cDIRECTORY_SEPARATOR);//
+	    			
+	    			//sLine = StringZZZ.toStringFileSeparatorsEscaped(sLine);
 	    			
 	      			listasReturn.add(sLine);
     			}//isEmpty sLine
