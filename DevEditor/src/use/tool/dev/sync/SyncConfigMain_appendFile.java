@@ -11,6 +11,7 @@ import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
 import basic.zBasic.util.abstractList.ArrayListUniqueZZZ;
 import basic.zBasic.util.abstractList.ArrayListUtilZZZ;
+import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringArrayZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
@@ -29,13 +30,8 @@ import basic.zKernel.KernelPropertyZZZ;
  * @author fl86kyvo
  *
  */
-public class SyncConfigMain_appendFile implements IConstantZZZ {
+public class SyncConfigMain_appendFile implements IConstantZZZ, ISyncConfigConstantsZZZ {
 	
-	public final static String sDIRECTORY_DEFAULT = "c:\\temp";
-	public final static String sFILE_DEFAULT = "newFileList.txt";
-	
-	public final static String sCONFIGURATION_DIRECTORY_DEFAULT="Projekt_Tool_DevEditor\\DevEditor\\src\\bat\\syncRepositoryTool";
-	public final static String sCONFIGURATION_FILENAME_DEFAULT="HIS_QISSERVER_FGL_paths.cfg";
 	
     private String sFile = null;
     private String sDirectory = null;
@@ -73,8 +69,8 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	    	   
 	    	   	//1. Lies die Rohdaten ein
 	        	SyncConfigConsoleUI sqlConsole = new SyncConfigConsoleUI();	        	
-	        	List<String> listEintrag = sqlConsole.readLinesAsList(); //entweder Zeilen aus der Konsole oder aus einer Datei.
-	        	System.out.println("Neue Dateipfade: Eingelesen.");
+	        	List<String> listEintrag = sqlConsole.readLinesOrFileAsList(); //entweder Zeilen aus der Konsole oder aus einer Datei.
+	        	System.out.println("Neue Dateipfadzeilen: Eingelesen.");
 	        	
 	        	//2. Überarbeitet die Rohdaten
 	        	//Die neuen Dateipfade müssen mit WEB-INF anfangen.
@@ -85,7 +81,7 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	        	listEintrag = erzeuger.normalizeLines(listEintrag);
 	        	
 	        	
-	        	//3. Ermittle aus der aktuellen Konfiguration den höchsen Map Eintrag und dann den nächsten.
+	        	//3. Ermittle aus der aktuellen Konfiguration den höchsten Map Eintrag und dann den nächsten.
 	        	//   Beispiel für eine Map - Zeile: MAP_09=WEB-INF\templates\dbinterface\hisinone\sospos-duplicate_unitPrePO4TUBAF.vm
 	        	//   Also: Teile die Zeile an dem "=" auf. ...Java Properties machen das automatisch.
 	        	String sConfigFile = FileEasyZZZ.joinFilePathName(sConfigFileDirectory, sConfigFileName);	        	
@@ -103,7 +99,7 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	        	//Value=WEB-INF\templates\dbinterface\hisinone\sospos-duplicate_unitPrePO4TUBAF.vm
 	        	
 	        	
-	        	//TODOGOON20260813;//Jetzt muss verhindert weden, dass Zeilen übernommen werden, die bereits schon in der Konfiguration vorhanden sind.
+	        	//Jetzt muss verhindert weden, dass Zeilen übernommen werden, die bereits schon in der Konfiguration vorhanden sind.
 	        	List<String>listEintragNewly = new ArrayList<String>();
 	        	for(String sListEintrag : listEintrag) {
 	        		boolean bExistsYet = PropertiesUtilZZZ.hasValue(prop, sListEintrag);
@@ -121,14 +117,21 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	        	FileTextAppenderZZZ objFileAppender = new FileTextAppenderZZZ(fileConfigFile);
 	        	
 	        	int iCount = 0;
-	        	for(String sLine : listEintragNewly) {
+	        	for(String sLine : listEintragNewly) {	        		
 	        		iCount++;
+	        		
+	        		//Vor der 1. Zeile einen Kommentar schreiben, "es folgen neue Zeilen, Datum".
+	        		if(iCount==1) {
+	        			String sLineComment = SyncConfigUtilZZZ.createLineCommentDated("Neu angehängte Zeile(n)");
+	        			objFileAppender.append(sLineComment);
+	        		}
+	        		
 
 		        	//String sKeyMaxNext = SyncConfigUtilZZZ.computeKey(iKeyMax+1);
 		        	//System.out.println("Naechster Key Eintrag: " + sKeyMaxNext);
-	        		String sLineEsacaped = StringZZZ.escapeFileSeparators(sLine);
-		        	String sLineNext = SyncConfigUtilZZZ.computeLineForKey(iKeyMax+iCount, sLineEsacaped);
-		        	System.out.println("Naechster Zeilen Eintrag: " + sLineNext);
+	        		String sLineEscaped = StringZZZ.escapeFileSeparators(sLine);
+		        	String sLineNext = SyncConfigUtilZZZ.computeLineForKey(iKeyMax+iCount, sLineEscaped);
+		        	System.out.println("Naechster Zeileneintrag: " + sLineNext);
 		        	
 		        	objFileAppender.append(sLineNext);
 	        	}
@@ -137,7 +140,7 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
 	        	if(iCount >= 1) {
 	        		boolean bSaved = objFileAppender.save();
 	        		if(bSaved) {
-	        			System.out.println("Datei mit neuen Zeilenentraegen gespeichert: " + objFileAppender.getFilePathSavedLast());
+	        			System.out.println("Datei mit neuen Zeileneintraegen gespeichert: " + objFileAppender.getFilePathSavedLast());
 	        		}else {
 	        			System.out.println("Datei nicht gespeichert: " + objFileAppender.getFilePath());
 	        		}
@@ -221,60 +224,24 @@ public class SyncConfigMain_appendFile implements IConstantZZZ {
     public void addAppend(String sAppend) {
     	this.getListAppend().add(sAppend);
     }
+    
+     
+   
 
     /** Z.B. Eingabezeile ist
      *       qisserver/WEB-INF/templates/oooreporting/tubaf/common/footerWithLabel.odt
      *       
      *       Notwendig ist, insgesamt. Ergo: Abgesehen vom Key muss WEB-INF vorne stehen.
-     *       MAP_10=WEB-INF/templates/oooreporting/tubaf/stu/uitext/Exmatrikulation01.odt
+     *       MAP_10=WEB-INF\\templates\\oooreporting\\tubaf\\stu\\uitext\\Exmatrikulation01.odt
+     *       
+     *       Diese Methode soll das Format sicherstellen.
+     *       
      * @param listasLine
      * @return
      * @throws ExceptionZZZ
      */
     public List<String> normalizeLines(List<String>listasLine) throws ExceptionZZZ{
-    	List<String>listasReturn = null;
-    	main:{
-    		if(listasLine==null) break main;
-    		listasReturn = new ArrayList<String>();
-    		
-    		String sRootFile = this.getRootForFiles();
-    		
-    		for(String sLine : listasLine) {
-    			if(!StringZZZ.isEmptyTrimmed(sLine)) {
-	    			System.out.println(sLine);
-	    			sLine = StringZZZ.stripFileSeparatorsLeft(sLine);
-	    			sLine = StringZZZ.stripFileSeparatorsRight(sLine);
-	    			
-	    			sLine = FileEasyZZZ.normalizeFilePath(sLine, FileEasyZZZ.cDIRECTORY_SEPARATOR);
-	    			
-	    			String[]saFilePathParts = StringZZZ.explode(sLine, FileEasyZZZ.cDIRECTORY_SEPARATOR);
-	    			if(StringArrayZZZ.contains(saFilePathParts, sRootFile)) {
-	    				//Alles vor dem Root abschneiden
-	    				ArrayList<String>listasPathPart = new ArrayList<String>();
-	    				
-	    				int iIndexFirst = StringArrayZZZ.searchIndexFirst(saFilePathParts, sRootFile);
-	    				for(int iIndex = iIndexFirst; iIndex<=saFilePathParts.length-1;iIndex++) {
-	    					listasPathPart.add(saFilePathParts[iIndex]);
-	    				}
-	    				
-	    				saFilePathParts = ArrayListUtilZZZ.toArray(listasPathPart, String.class);//Merke: Cast funktioniert nicht (String[])
-	    			}else {
-	    				//Vorweg den Root ergänzen
-	    				saFilePathParts = StringArrayZZZ.prepend(saFilePathParts, sRootFile);   				
-	    			}
-	    			
-	    			sLine = StringArrayZZZ.implode(saFilePathParts, FileEasyZZZ.cDIRECTORY_SEPARATOR);//
-	    			
-	    			//sLine = StringZZZ.toStringFileSeparatorsEscaped(sLine);
-	    			
-	      			listasReturn.add(sLine);
-    			}//isEmpty sLine
-    		}//end for
-    		
-    		
-    		
-    	}//end main:
-    	return listasReturn;
+    	return SyncConfigUtilZZZ.normalizeLines(listasLine, this.getRootForFiles());
     }
     
 }

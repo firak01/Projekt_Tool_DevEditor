@@ -108,7 +108,7 @@ public class SyncConfigConsoleUI {
 	 * @return
 	 * @throws ExceptionZZZ
 	 */
-	public List<String> readLinesAsList()throws ExceptionZZZ{
+	public List<String> readLinesOrFileAsList()throws ExceptionZZZ{
 		List<String> listasReturn = null;
 		main:{
 			try {
@@ -125,15 +125,14 @@ public class SyncConfigConsoleUI {
         
         
 		        boolean bFile = false; boolean bFileChecked=false;
-		        System.out.print("Bitte geben Sie einen Dateinamen im Verzeichnis '" + sDirectory + "' an"
-		        		       + "\noder die Dateipfade direkt ein (kommagetrennt, auch mehrer Zeilen auf einmal, ggfs. mehrfach ENTER druecken)(Leerstring zum Abbrechen):"
+		        System.out.print("Bitte geben Sie einen einzulesenden Dateinamen mit Dateipfaden im Verzeichnis '" + sDirectory + "' an"
+		        		       + "\noder die in der Konfiguration hinzuzufügenden neuen Dateipfade direkt ein (kommagetrennt, auch mehrer Zeilen auf einmal, ggfs. mehrfach ENTER druecken)(Leerstring zum Abbrechen):"
 		        		       + "\n");
 		        while (true) {                
 		            eintrag = reader.readLine();
-		            eintrag = eintrag.trim();
-		       	    
+		            		       	    
 		            //erst beim 2ten "ENTER" die Eingabe beenden
-		            if (StringZZZ.isEmptyNull(eintrag) && StringZZZ.isEmptyNull(eintragOld)) {
+		            if (StringZZZ.isEmptyTrimmed(eintrag) && StringZZZ.isEmptyTrimmed(eintragOld)) {
 		                break;
 		            }else {	                	
 		            	 if(!bFileChecked) {
@@ -155,7 +154,7 @@ public class SyncConfigConsoleUI {
 		                 eintragOld = eintrag;
 		            }                                       
 		        }//end while(true)
-		        System.out.println("Neue Dateipfade: Eingabe beendet.");
+		        System.out.println("Neue Dateipfadzeilen: Eingabe beendet.");
 		        
 		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		        if(bFile) {		        	
@@ -168,6 +167,53 @@ public class SyncConfigConsoleUI {
 		            	listasReturn.add(sEintragTemp);
 		            }		            
 		        }        
+			}catch (IOException ioe){
+				ExceptionZZZ ez = new ExceptionZZZ(ioe);
+				throw ez;
+			}
+		}//end main:
+		return listasReturn;		
+	}
+	
+	public List<String> readFileAsList()throws ExceptionZZZ{
+		List<String> listasReturn = null;
+		main:{
+			try {
+				BufferedReader reader = this.getReaderForConsole();		        
+				String sDirectory = this.getDirectory();
+		        
+				
+				listasReturn = new ArrayList<String>();
+        
+		        String eintrag="";
+		        File fileEintrag=null;
+        
+       
+		        System.out.print("Bitte geben Sie einen Dateinamen mit der zu aktualisierenden Konfiguration im Verzeichnis '" + sDirectory + "' an. (Leerstring zum Abbrechen):"
+		        		       + "\n");
+		                       
+		        boolean bFile = false; 
+	            while(!bFile) {
+		            eintrag = reader.readLine();
+		            if (StringZZZ.isEmptyTrimmed(eintrag)) {
+		                break;
+		            }else {	       
+	                	 //Ist der Eintrag ein Dateipfad?
+	                	 bFile = FileEasyZZZ.exists(sDirectory, eintrag);
+	                	 if(bFile) {
+	                		 fileEintrag = new File(sDirectory, eintrag);
+	                		 bFile = FileEasyZZZ.isFileExisting(fileEintrag);	                		
+	                	 }
+		            }
+	            }//end while
+		        System.out.println("Zu aktualisierende Konfiguration: Eingabe beendet.");
+		        
+		        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		        	        	
+		        //Das Einlesen der Eintragsliste per Datei
+	        	FileTextReaderZZZ objReaderText = new FileTextReaderZZZ(fileEintrag);
+	        	listasReturn = objReaderText.getLines(); //Das hat den Vorteil, das es nur Zeilen ohne Kommentar und keine Leerzeilen sind.
+		       
 			}catch (IOException ioe){
 				ExceptionZZZ ez = new ExceptionZZZ(ioe);
 				throw ez;
