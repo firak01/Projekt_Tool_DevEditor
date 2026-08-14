@@ -3,6 +3,7 @@ package use.tool.dev.sync;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Vector;
 
 import basic.zBasic.ExceptionZZZ;
 import basic.zBasic.IConstantZZZ;
@@ -12,6 +13,7 @@ import basic.zBasic.util.datatype.dateTime.DateTimeZZZ;
 import basic.zBasic.util.datatype.string.StringArrayZZZ;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import basic.zBasic.util.file.FileEasyZZZ;
+import basic.zBasic.util.properties.IPropertiesConstantZZZ;
 import basic.zBasic.util.properties.PropertiesUtilZZZ;
 
 public class SyncConfigUtilZZZ implements IConstantZZZ {
@@ -189,13 +191,18 @@ public class SyncConfigUtilZZZ implements IConstantZZZ {
     		    		
     		for(String sLine : listasLine) {
     			if(PropertiesUtilZZZ.isValueLine(sLine)) { //(StringZZZ.isEmptyTrimmed(sLine)) {
+    				Vector<String> vec = PropertiesUtilZZZ.splittLine(sLine);
+    				String sKey = vec.get(0);
+    				String sValue = vec.get(1);
+    				
+    				
 	    			System.out.println(sLine);
-	    			sLine = StringZZZ.stripFileSeparatorsLeft(sLine);
-	    			sLine = StringZZZ.stripFileSeparatorsRight(sLine);
+	    			sValue = StringZZZ.stripFileSeparatorsLeft(sValue);
+	    			sValue = StringZZZ.stripFileSeparatorsRight(sValue);
 	    			
-	    			sLine = FileEasyZZZ.normalizeFilePath(sLine, FileEasyZZZ.cDIRECTORY_SEPARATOR);
+	    			sValue = FileEasyZZZ.normalizeFilePath(sValue, FileEasyZZZ.cDIRECTORY_SEPARATOR);
 	    			
-	    			String[]saFilePathParts = StringZZZ.explode(sLine, FileEasyZZZ.cDIRECTORY_SEPARATOR);
+	    			String[]saFilePathParts = StringZZZ.explode(sValue, FileEasyZZZ.sDIRECTORY_SEPARATOR_WINDOWS);
 	    			if(StringArrayZZZ.contains(saFilePathParts, sRootForFile)) {
 	    				//Alles vor dem Root abschneiden
 	    				ArrayList<String>listasPathPart = new ArrayList<String>();
@@ -211,7 +218,12 @@ public class SyncConfigUtilZZZ implements IConstantZZZ {
 	    				saFilePathParts = StringArrayZZZ.prepend(saFilePathParts, sRootForFile);   				
 	    			}
 	    			
-	    			sLine = StringArrayZZZ.implode(saFilePathParts, FileEasyZZZ.cDIRECTORY_SEPARATOR);	    				    				      			
+	    			sValue = StringArrayZZZ.implode(saFilePathParts, FileEasyZZZ.sDIRECTORY_SEPARATOR_WINDOWS);
+	    			
+	    			//!!! Verdopple nun die Backslashe, damit beim Einlesen mit Properties kein \\u (invalid Unicode) gefunden wird...
+	    			sValue = StringZZZ.escapeFileSeparators(sValue);
+	    			
+	    			sLine = sKey + IPropertiesConstantZZZ.cKEY_VALUE_SEPARATOR + sValue;
     			}//isEmpty sLine
     			
     			listasReturn.add(sLine); //Übernimm auch Leerzeilen und Kommentarzeile
