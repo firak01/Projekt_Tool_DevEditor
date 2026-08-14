@@ -150,7 +150,7 @@ public class SyncConfigConsoleUI {
 		            	 }
 		            	 
 		            	 
-		            	 sEintrag = eintragOld;
+		            	 sEintrag = sEintrag + "\n" + eintragOld;
 		                 eintragOld = eintrag;
 		            }                                       
 		        }//end while(true)
