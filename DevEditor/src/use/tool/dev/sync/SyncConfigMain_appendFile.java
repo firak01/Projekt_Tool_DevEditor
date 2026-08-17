@@ -114,6 +114,8 @@ public class SyncConfigMain_appendFile implements IConstantZZZ, ISyncConfigConst
 	        	System.out.println("Bisher hoechster Key Eintrag: " + sKeyMax);
 	        	
 	        	//4. Hänge eine neue, ausgerechnete Zeile an
+	        	//   TODOGOON20260818: Der Appender muss ein FileTextUniqueAppenderZZZ werden, oder per Flag gesteuert.
+	        	//                     Auf jeden fall doppelte Einträge schon jetzt und nicht erst beim "updateKeys" vermeiden.
 	        	FileTextAppenderZZZ objFileAppender = new FileTextAppenderZZZ(fileConfigFile);
 	        	
 	        	int iCount = 0;
